@@ -57,6 +57,34 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // STABLE-specific colors
+        stable: {
+          DEFAULT: "hsl(var(--stable))",
+          foreground: "hsl(var(--stable-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        danger: {
+          DEFAULT: "hsl(var(--danger))",
+          foreground: "hsl(var(--danger-foreground))",
+        },
+        chart: {
+          active: "hsl(var(--chart-active))",
+          recovered: "hsl(var(--chart-recovered))",
+          escalated: "hsl(var(--chart-escalated))",
+          aging: "hsl(var(--chart-aging))",
+        },
+        surface: {
+          elevated: "hsl(var(--surface-elevated))",
+          sunken: "hsl(var(--surface-sunken))",
+        },
+        governance: {
+          safe: "hsl(var(--governance-safe))",
+          risk: "hsl(var(--governance-risk))",
+          unsafe: "hsl(var(--governance-unsafe))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
