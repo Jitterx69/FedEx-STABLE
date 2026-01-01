@@ -1,0 +1,12 @@
+prefix=/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${prefix}/lib
+
+Name: librdkafka-static
+Description: The Apache Kafka C/C++ library (static)
+Version: 2.10.0
+Requires.private: 
+Cflags: -I${includedir} -DLIBRDKAFKA_STATICLIB
+Libs: -L${libdir} ${libdir}/librdkafka.a -lpthread -ldl -lm
+Libs.private: 

@@ -1,0 +1,1 @@
+/Users/mohit/Desktop/stable-governance-console/target/release/stable-ingress: /Users/mohit/Desktop/stable-governance-console/backend/crates/ingress/build.rs /Users/mohit/Desktop/stable-governance-console/backend/crates/ingress/src/main.rs /Users/mohit/Desktop/stable-governance-console/target/release/build/stable-ingress-ea0b0703a9992869/out/stable.events.v1.rs

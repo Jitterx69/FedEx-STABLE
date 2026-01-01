@@ -1,0 +1,1 @@
+/Users/mohit/Desktop/stable-governance-console/target/debug/stable-admin: /Users/mohit/Desktop/stable-governance-console/backend/crates/admin/build.rs /Users/mohit/Desktop/stable-governance-console/backend/crates/admin/src/main.rs /Users/mohit/Desktop/stable-governance-console/target/debug/build/stable-admin-3ce759c49a863ed1/out/stable.events.v1.rs

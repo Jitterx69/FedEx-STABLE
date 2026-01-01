@@ -1,0 +1,189 @@
+version: '3.8'
+
+services:
+  # -----------------------------------------------------------------
+  # Frontend
+  # -----------------------------------------------------------------
+  frontend:
+    build: 
+      context: ./frontend
+    container_name: stable-frontend
+    ports:
+      - "5176:5176"
+    environment:
+      - VITE_API_TARGET=http://backend-gateway:8080
+    depends_on:
+      - backend-gateway
+
+  # -----------------------------------------------------------------
+  # Backend Services (Rust)
+  # -----------------------------------------------------------------
+  backend-gateway:
+    build:
+      context: .
+      dockerfile: backend/crates/Dockerfile
+    container_name: stable-backend-gateway
+    command: ["gateway"]
+    ports:
+      - "8080:8080"
+    environment:
+      - POSTGRES_URL=postgres://stable_user:stable_password@postgres:5432/stable_core
+      - INGRESS_URL=http://backend-ingress:3000
+      - ADMIN_URL=http://backend-admin:3001
+      - RUST_LOG=info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend-ingress:
+        condition: service_started
+      backend-admin:
+        condition: service_started
+
+  backend-ingress:
+    build:
+      context: .
+      dockerfile: backend/crates/Dockerfile
+    container_name: stable-backend-ingress
+    command: ["ingress"]
+    # Internal port 3000, not strictly needed to expose if only gateway talks to it, 
+    # but exposing for debugging or direct access if needed.
+    ports:
+      - "3000:3000" 
+    environment:
+      - KAFKA_BOOTSTRAP=redpanda:9092
+      - RUST_LOG=info
+    depends_on:
+      redpanda:
+        condition: service_healthy
+
+  backend-admin:
+    build:
+      context: .
+      dockerfile: backend/crates/Dockerfile
+    container_name: stable-backend-admin
+    command: ["admin"]
+    ports:
+      - "3001:3001"
+    environment:
+      - KAFKA_BOOTSTRAP=redpanda:9092
+      - RUST_LOG=info
+    depends_on:
+      redpanda:
+        condition: service_healthy
+
+  backend-regulator:
+    build:
+      context: .
+      dockerfile: backend/crates/Dockerfile
+    container_name: stable-backend-regulator
+    command: ["regulator"]
+    environment:
+      - KAFKA_BOOTSTRAP=redpanda:9092
+      - RUST_LOG=info
+    depends_on:
+      redpanda:
+        condition: service_healthy
+
+  backend-projection:
+    build:
+      context: .
+      dockerfile: backend/crates/Dockerfile
+    container_name: stable-backend-projection
+    command: ["projection"]
+    environment:
+      - KAFKA_BOOTSTRAP=redpanda:9092
+      - RUST_LOG=info
+    depends_on:
+      redpanda:
+        condition: service_healthy
+
+  backend-assignment:
+    build:
+      context: .
+      dockerfile: backend/crates/Dockerfile
+    container_name: stable-backend-assignment
+    command: ["assignment"]
+    environment:
+      - KAFKA_BOOTSTRAP=redpanda:9092
+      - RUST_LOG=info
+    depends_on:
+      redpanda:
+        condition: service_healthy
+
+  # -----------------------------------------------------------------
+  # Backend Services (Python)
+  # -----------------------------------------------------------------
+  backend-estimation:
+    build:
+      context: .
+      dockerfile: backend/python/Dockerfile
+    container_name: stable-backend-estimation
+    environment:
+      - KAFKA_BOOTSTRAP=redpanda:9092
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    # Mount model artifacts if they exist locally to avoid retraining
+    volumes:
+      - ./backend/python/estimation:/app/backend/python/estimation
+
+  # -----------------------------------------------------------------
+  # Infrastructure
+  # -----------------------------------------------------------------
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v23.3.3
+    container_name: stable-redpanda
+    command:
+      - redpanda
+      - start
+      - --smp 1
+      - --memory 1G
+      - --reserve-memory 0M
+      - --overprovisioned
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+    ports:
+      - 18081:8081
+      - 19092:19092
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: stable-postgres
+    environment:
+      POSTGRES_USER: stable_user
+      POSTGRES_PASSWORD: stable_password
+      POSTGRES_DB: stable_core
+    ports:
+      - 5435:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stable_user -d stable_core"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: stable-redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  redpanda-data:
+  postgres-data:
+  redis-data:
