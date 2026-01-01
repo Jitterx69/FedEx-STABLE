@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/mohit/Desktop/stable-governance-console/target/debug/build/rdkafka-sys-0ea70719216e3c7f/out/build/cmake_install.cmake",
+		"/Users/mohit/Desktop/stable-governance-console/target/debug/build/rdkafka-sys-0ea70719216e3c7f/out/build/src/cmake_install.cmake",
+		"/Users/mohit/Desktop/stable-governance-console/target/debug/build/rdkafka-sys-0ea70719216e3c7f/out/build/src-cpp/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

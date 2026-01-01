@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package stable.events.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// The canonical envelope for all STABLE events.
+// This structure is immutable and must be strictly enforced.
+message EventEnvelope {
+  // Unique identifier for this specific event instance (UUID v4)
+  string event_id = 1;
+
+  // The simplified semantic type of the event (e.g., "AccountIngested", "SignalReleased")
+  string event_type = 2;
+
+  // The source component generating this event (e.g., "ingestion-svc", "signal-regulator")
+  string source = 3;
+
+  // The schema version this payload conforms to (e.g., "1.0.0")
+  string schema_version = 4;
+
+  // When the event actually occurred in the real world
+  google.protobuf.Timestamp occurrence_time = 5;
+
+  // When the event was durably ingested into the STABLE backbone
+  google.protobuf.Timestamp ingestion_time = 6;
+
+  // The actual event data payload
+  oneof payload {
+    AccountIngested account_ingested = 10;
+    AssignmentCreated assignment_created = 11;
+    InternalEstimateGenerated internal_estimate_generated = 12;
+    RegulatedSignalReleased regulated_signal_released = 13;
+    GovernanceConfigUpdated governance_config_updated = 14;
+  }
+}
+
+// Event: A new account has entered the system
+message AccountIngested {
+  string account_id = 1;
+  double outstanding_balance = 2;
+  int32 days_past_due = 3;
+}
+
+// Event: An account has been assigned to a DCA
+message AssignmentCreated {
+  string assignment_id = 1;
+  string account_id = 2;
+  string dca_id = 3;
+}
+
+// Event: ML Model has generated an internal belief (NEVER EXPOSED)
+message InternalEstimateGenerated {
+  string model_id = 1;
+  string target_account_id = 2;
+  double raw_recovery_probability = 3; // 0.0 to 1.0
+  double estimated_effort_hours = 4;
+}
+
+// Event: Governed signal released to DCA
+message RegulatedSignalReleased {
+  string signal_id = 1;
+  string target_assignment_id = 2;
+  string priority_band = 3; // "High", "Medium", "Low"
+  double noise_factor_applied = 4;
+}
+
+// Event: Governance Controls have been updated by an Admin
+message GovernanceConfigUpdated {
+  string config_id = 1;
+  double information_sharpness = 2; // 0.0 to 1.0
+  double noise_injection = 3;       // 0.0 to 1.0
+}

@@ -1,0 +1,13 @@
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/lib/cmake/RdKafka/RdKafkaConfig.cmake
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/lib/cmake/RdKafka/RdKafkaConfigVersion.cmake
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/lib/cmake/RdKafka/FindLZ4.cmake
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/lib/cmake/RdKafka/RdKafkaTargets.cmake
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/lib/cmake/RdKafka/RdKafkaTargets-release.cmake
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/share/licenses/librdkafka/LICENSES.txt
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/lib/pkgconfig/rdkafka-static.pc
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/lib/librdkafka.a
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/include/librdkafka/rdkafka.h
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/include/librdkafka/rdkafka_mock.h
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/lib/pkgconfig/rdkafka++-static.pc
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/lib/librdkafka++.a
+/Users/mohit/Desktop/stable-governance-console/target/release/build/rdkafka-sys-81b5bf02f0a94053/out/include/librdkafka/rdkafkacpp.h

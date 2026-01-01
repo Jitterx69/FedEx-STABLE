@@ -1,0 +1,11 @@
+[workspace]
+members = [
+    "backend/crates/ingress",
+    "backend/crates/projection",
+    "backend/crates/lifecycle",
+    "backend/crates/assignment",
+    "backend/crates/regulator",
+    "backend/crates/admin",
+    "backend/crates/gateway"
+]
+resolver = "2"

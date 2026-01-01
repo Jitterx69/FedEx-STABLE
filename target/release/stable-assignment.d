@@ -1,0 +1,1 @@
+/Users/mohit/Desktop/stable-governance-console/target/release/stable-assignment: /Users/mohit/Desktop/stable-governance-console/backend/crates/assignment/build.rs /Users/mohit/Desktop/stable-governance-console/backend/crates/assignment/src/main.rs /Users/mohit/Desktop/stable-governance-console/target/release/build/stable-assignment-2275407a12f55879/out/stable.events.v1.rs

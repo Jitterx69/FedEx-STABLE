@@ -1,0 +1,7 @@
+confluent-kafka
+protobuf
+torch
+numpy
+scikit-learn
+pandas
+grpcio-tools

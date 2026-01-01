@@ -1,0 +1,1 @@
+/Users/mohit/Desktop/stable-governance-console/target/debug/stable-regulator: /Users/mohit/Desktop/stable-governance-console/backend/crates/regulator/build.rs /Users/mohit/Desktop/stable-governance-console/backend/crates/regulator/src/main.rs /Users/mohit/Desktop/stable-governance-console/target/debug/build/stable-regulator-a0c332826fd01f67/out/stable.events.v1.rs
