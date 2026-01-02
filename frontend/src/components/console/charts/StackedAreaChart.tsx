@@ -19,7 +19,7 @@ const StackedAreaChart = ({ data, stacked100 = false }: Props) => {
   // Transform data for 100% stacked view if needed
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [];
-    
+
     if (stacked100) {
       return data.map(d => {
         const total = d.active + d.recovered + d.escalated || 1;
@@ -34,7 +34,7 @@ const StackedAreaChart = ({ data, stacked100 = false }: Props) => {
         };
       });
     }
-    
+
     return data.map(d => ({
       ...d,
       _rawActive: d.active,
@@ -63,38 +63,6 @@ const StackedAreaChart = ({ data, stacked100 = false }: Props) => {
     );
   }
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload || payload.length === 0) return null;
-    
-    const total = payload.reduce((sum: number, p: any) => sum + (p.value || 0), 0);
-    
-    return (
-      <div className="bg-slate-900/95 border border-slate-700 rounded-lg p-3 text-xs shadow-xl">
-        <div className="font-medium text-slate-200 mb-2">Time: {label}</div>
-        <div className="space-y-1">
-          {payload.map((p: any, idx: number) => (
-            <div key={idx} className="flex justify-between gap-4">
-              <span className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-                <span className="text-slate-400 capitalize">{p.dataKey}:</span>
-              </span>
-              <span className="text-white">
-                {stacked100 
-                  ? `${p.value.toFixed(1)}% (${p.payload[`_raw${p.dataKey.charAt(0).toUpperCase() + p.dataKey.slice(1)}`]})`
-                  : p.value.toFixed(0)
-                }
-              </span>
-            </div>
-          ))}
-          <div className="pt-2 mt-2 border-t border-slate-700 flex justify-between text-slate-300">
-            <span>Total:</span>
-            <span>{stacked100 ? '100%' : total.toFixed(0)}</span>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="w-full h-full">
       <div className="text-xs text-slate-400 mb-2 font-medium flex items-center gap-2">
@@ -105,33 +73,33 @@ const StackedAreaChart = ({ data, stacked100 = false }: Props) => {
         <AreaChart data={chartData}>
           <defs>
             <linearGradient id="gradActive" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.5}/>
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.5} />
+              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1} />
             </linearGradient>
             <linearGradient id="gradRecovered" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.5}/>
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+              <stop offset="5%" stopColor="#10b981" stopOpacity={0.5} />
+              <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
             </linearGradient>
             <linearGradient id="gradEscalated" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.5}/>
-              <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.5} />
+              <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-          <XAxis 
-            dataKey="time" 
+          <XAxis
+            dataKey="time"
             tick={{ fontSize: 10, fill: '#64748b' }}
             axisLine={{ stroke: '#334155' }}
           />
-          <YAxis 
+          <YAxis
             tick={{ fontSize: 10, fill: '#64748b' }}
             axisLine={{ stroke: '#334155' }}
             domain={stacked100 ? [0, 100] : ['auto', 'auto']}
             tickFormatter={(v) => stacked100 ? `${v}%` : v}
             width={45}
           />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend 
+          <Tooltip content={<CustomTooltip stacked100={stacked100} />} />
+          <Legend
             onClick={(e) => toggleSeries(e.dataKey as string)}
             formatter={(value) => (
               <span className={`text-xs cursor-pointer ${hiddenSeries.has(value) ? 'opacity-40' : ''}`}>
@@ -174,6 +142,38 @@ const StackedAreaChart = ({ data, stacked100 = false }: Props) => {
           )}
         </AreaChart>
       </ResponsiveContainer>
+    </div>
+  );
+};
+
+const CustomTooltip = ({ active, payload, label, stacked100 }: any) => {
+  if (!active || !payload || payload.length === 0) return null;
+
+  const total = payload.reduce((sum: number, p: any) => sum + (p.value || 0), 0);
+
+  return (
+    <div className="bg-slate-900/95 border border-slate-700 rounded-lg p-3 text-xs shadow-xl">
+      <div className="font-medium text-slate-200 mb-2">Time: {label}</div>
+      <div className="space-y-1">
+        {payload.map((p: any, idx: number) => (
+          <div key={idx} className="flex justify-between gap-4">
+            <span className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
+              <span className="text-slate-400 capitalize">{p.dataKey}:</span>
+            </span>
+            <span className="text-white">
+              {stacked100
+                ? `${p.value.toFixed(1)}% (${p.payload[`_raw${p.dataKey.charAt(0).toUpperCase() + p.dataKey.slice(1)}`].toFixed(0)})`
+                : p.value.toFixed(0)
+              }
+            </span>
+          </div>
+        ))}
+        <div className="pt-2 mt-2 border-t border-slate-700 flex justify-between text-slate-300">
+          <span>Total:</span>
+          <span>{stacked100 ? '100%' : total.toFixed(0)}</span>
+        </div>
+      </div>
     </div>
   );
 };

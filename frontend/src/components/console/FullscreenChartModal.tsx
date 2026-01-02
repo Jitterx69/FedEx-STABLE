@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Minimize2, ChevronDown, LayoutGrid, LayoutTemplate, 
-  TrendingUp, BarChart3, Target, Crosshair, Ruler, 
-  Activity, Download, Play, Pause, 
+import {
+  Minimize2, ChevronDown, LayoutGrid, LayoutTemplate,
+  TrendingUp, BarChart3, Target, Crosshair, Ruler,
+  Activity, Download, Play, Pause,
   SkipBack, SkipForward, Mountain, LineChart, Minus,
   History, Save, FileClock, Trash2, AlertTriangle, X,
   BrainCircuit, Sparkles, Grid3X3,
@@ -90,8 +90,8 @@ const SimpleAlert = ({ isOpen, title, description, onConfirm, onCancel, confirmT
         <p className="text-sm text-slate-400 mb-6 pl-12">{description}</p>
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onCancel} className="text-slate-300 hover:text-white">{cancelText}</Button>
-          <Button 
-            variant={isDestructive ? "destructive" : "default"} 
+          <Button
+            variant={isDestructive ? "destructive" : "default"}
             onClick={onConfirm}
             className={isDestructive ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"}
           >
@@ -121,22 +121,22 @@ interface FullscreenChartModalProps {
 }
 
 // Dropdown Menu Component
-const ToolDropdown = ({ 
-  label, 
-  icon: Icon, 
-  children, 
-  isOpen, 
-  onToggle 
-}: { 
-  label: string; 
-  icon: any; 
-  children: React.ReactNode; 
-  isOpen: boolean; 
+const ToolDropdown = ({
+  label,
+  icon: Icon,
+  children,
+  isOpen,
+  onToggle
+}: {
+  label: string;
+  icon: any;
+  children: React.ReactNode;
+  isOpen: boolean;
   onToggle: () => void;
 }) => (
   <div className="relative">
-    <Button 
-      size="sm" 
+    <Button
+      size="sm"
       variant="ghost"
       onClick={onToggle}
       className="gap-1.5 text-slate-300 hover:bg-slate-800 hover:text-white h-8 px-2.5"
@@ -154,25 +154,24 @@ const ToolDropdown = ({
 );
 
 // Menu Item Component
-const MenuItem = ({ 
-  label, 
-  icon: Icon, 
-  checked, 
-  onClick, 
-  disabled 
-}: { 
-  label: string; 
-  icon?: any; 
-  checked?: boolean; 
-  onClick: () => void; 
+const MenuItem = ({
+  label,
+  icon: Icon,
+  checked,
+  onClick,
+  disabled
+}: {
+  label: string;
+  icon?: any;
+  checked?: boolean;
+  onClick: () => void;
   disabled?: boolean;
 }) => (
   <button
     onClick={onClick}
     disabled={disabled}
-    className={`w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-slate-700 transition-colors ${
-      disabled ? 'opacity-50 cursor-not-allowed' : ''
-    } ${checked ? 'text-emerald-400' : 'text-slate-300'}`}
+    className={`w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-slate-700 transition-colors ${disabled ? 'opacity-50 cursor-not-allowed' : ''
+      } ${checked ? 'text-emerald-400' : 'text-slate-300'}`}
   >
     {Icon && <Icon className="w-3.5 h-3.5" />}
     {checked !== undefined && (
@@ -188,11 +187,11 @@ const MenuItem = ({
 const StatsPanel = ({ data, viewMode }: { data: any[]; viewMode: ViewMode }) => {
   const stats = useMemo(() => {
     if (!data || data.length === 0) return null;
-    
+
     const active = data.map(d => d.active || 0);
     const recovered = data.map(d => d.recovered || 0);
     const escalated = data.map(d => d.escalated || 0);
-    
+
     const calcStats = (arr: number[]) => {
       const sum = arr.reduce((a, b) => a + b, 0);
       const mean = sum / arr.length;
@@ -205,15 +204,15 @@ const StatsPanel = ({ data, viewMode }: { data: any[]; viewMode: ViewMode }) => 
       const growthRate = first !== 0 ? ((last - first) / first) * 100 : 0;
       return { min, max, mean, stdDev, growthRate, sum };
     };
-    
+
     const activeStats = calcStats(active);
     const recoveredStats = calcStats(recovered);
     const escalatedStats = calcStats(escalated);
-    
+
     const totalRecovered = recoveredStats.sum;
     const totalEscalated = escalatedStats.sum;
     const recoveryRatio = totalEscalated > 0 ? (totalRecovered / totalEscalated).toFixed(2) : '∞';
-    
+
     return { active: activeStats, recovered: recoveredStats, escalated: escalatedStats, recoveryRatio };
   }, [data]);
 
@@ -273,20 +272,20 @@ const StatsPanel = ({ data, viewMode }: { data: any[]; viewMode: ViewMode }) => 
   );
 };
 
-const FullscreenChartModal = ({ 
-  isOpen, 
-  onClose, 
-  isStableMode, 
-  stableHistory, 
-  baselineHistory, 
+const FullscreenChartModal = ({
+  isOpen,
+  onClose,
+  isStableMode,
+  stableHistory,
+  baselineHistory,
   viewMode,
-  onViewModeChange 
+  onViewModeChange
 }: FullscreenChartModalProps) => {
   // UI State
   const [showViewDropdown, setShowViewDropdown] = useState(false);
   const [comparisonMode, setComparisonMode] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  
+
   // Tool State
   const [showMovingAvg5, setShowMovingAvg5] = useState(false);
   const [showMovingAvg10, setShowMovingAvg10] = useState(false);
@@ -294,21 +293,21 @@ const FullscreenChartModal = ({
   const [showTrendLine, setShowTrendLine] = useState(false);
   const [showReferenceLine, setShowReferenceLine] = useState(false);
   const [referenceValue, setReferenceValue] = useState(0);
-  
+
   const [showStatsPanel, setShowStatsPanel] = useState(false);
   const [showCrosshair, setShowCrosshair] = useState(true);
   const [showPeakValley, setShowPeakValley] = useState(false);
   const [isMeasuring, setIsMeasuring] = useState(false);
-  
+
   const [showActive, setShowActive] = useState(true);
   const [showRecovered, setShowRecovered] = useState(true);
   const [showEscalated, setShowEscalated] = useState(true);
   const [normalizeView, setNormalizeView] = useState(false);
-  
+
   const [rangeFilter, setRangeFilter] = useState<'all' | 'last50' | 'last100'>('all');
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackIndex, setPlaybackIndex] = useState(0);
-  
+
   // Advanced Analytics State
   const [showBollingerBands, setShowBollingerBands] = useState(false);
   const [bollingerPeriod, setBollingerPeriod] = useState(20);
@@ -318,31 +317,31 @@ const FullscreenChartModal = ({
   const [showMACD, setShowMACD] = useState(false);
   const [showAnomalies, setShowAnomalies] = useState(false);
   const [anomalyThreshold, setAnomalyThreshold] = useState(2.5);
-  
+
   // Forecasting State
   const [showForecast, setShowForecast] = useState(false);
   const [forecastPeriods, setForecastPeriods] = useState(10);
   const [showConfidenceInterval, setShowConfidenceInterval] = useState(true);
-  
+
   // Correlation Matrix State
   const [showCorrelationMatrix, setShowCorrelationMatrix] = useState(false);
 
   // Chart Type State
   type ChartType = 'line' | 'stacked' | 'waterfall' | 'heatmap' | 'scatter';
   const [chartType, setChartType] = useState<ChartType>('line');
-  
+
   // Annotation State
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [showAnnotationPanel, setShowAnnotationPanel] = useState(false);
-  
+
   // Threshold Alerts State
   const [thresholdAlerts, setThresholdAlerts] = useState<ThresholdAlert[]>([
     { id: 'default-high', metric: 'escalated', operator: '>', value: 10, enabled: false, color: '#ef4444', label: 'High Escalation' },
   ]);
   const [showThresholdAlerts, setShowThresholdAlerts] = useState(false);
-  
+
   // Drilldown State
-  const [drilldownPoint, setDrilldownPoint] = useState<any>(null);
+  // const [drilldownPoint, setDrilldownPoint] = useState<any>(null);
   const [showDrilldown, setShowDrilldown] = useState(false);
 
   const chartRef = useRef<HTMLDivElement>(null);
@@ -429,7 +428,7 @@ const FullscreenChartModal = ({
   // Logic: Handle Save
   const handleSaveSession = () => {
     if (!sessionNameInput.trim()) return;
-    
+
     const newSession: SavedSession = {
       id: crypto.randomUUID(),
       name: sessionNameInput,
@@ -449,7 +448,7 @@ const FullscreenChartModal = ({
     const updatedSessions = [newSession, ...savedSessions];
     setSavedSessions(updatedSessions);
     localStorage.setItem('sgc_chart_sessions', JSON.stringify(updatedSessions));
-    
+
     updateLastSavedHash();
     setIsSaveModalOpen(false);
     setSessionNameInput("");
@@ -460,7 +459,7 @@ const FullscreenChartModal = ({
     onViewModeChange(session.viewMode);
     setComparisonMode(session.comparisonMode);
     setMeasurePoints(session.measurePoints || []);
-    
+
     // Set Config
     setShowMovingAvg5(session.chartConfig.showMovingAvg5);
     setShowMovingAvg10(session.chartConfig.showMovingAvg10);
@@ -478,7 +477,7 @@ const FullscreenChartModal = ({
     setIsHistoryModalOpen(false);
     // After state updates flush (next render), hash will match. 
     // We can't synchronously update hash here perfectly but checking hash against new state later works.
-    setTimeout(() => updateLastSavedHash(), 100); 
+    setTimeout(() => updateLastSavedHash(), 100);
   };
 
   // Logic: Handle Delete
@@ -505,7 +504,8 @@ const FullscreenChartModal = ({
       setPlaybackIndex(prev => {
         const maxIndex = (isStableMode ? stableHistory : baselineHistory).length;
         if (prev >= maxIndex) {
-          setIsPlaying(false);
+          // Defer state update to avoid side-effect in reducer/updater
+          setTimeout(() => setIsPlaying(false), 0);
           return 0;
         }
         return prev + 1;
@@ -518,17 +518,17 @@ const FullscreenChartModal = ({
   const currentData = useMemo(() => {
     const raw = isStableMode ? stableHistory : baselineHistory;
     let filtered = raw;
-    
+
     if (rangeFilter === 'last50') {
       filtered = raw.slice(-50);
     } else if (rangeFilter === 'last100') {
       filtered = raw.slice(-100);
     }
-    
+
     if (isPlaying && playbackIndex > 0) {
       filtered = filtered.slice(0, playbackIndex);
     }
-    
+
     return filtered;
   }, [isStableMode, stableHistory, baselineHistory, rangeFilter, isPlaying, playbackIndex]);
 
@@ -552,7 +552,7 @@ const FullscreenChartModal = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `system-behavior-${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `system-behavior-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -656,9 +656,9 @@ const FullscreenChartModal = ({
         {/* Tools - Primary Group */}
         <div className="flex items-center gap-0.5" onClick={e => e.stopPropagation()}>
           {/* Overlays Menu */}
-          <ToolDropdown 
-            label="Overlays" 
-            icon={TrendingUp} 
+          <ToolDropdown
+            label="Overlays"
+            icon={TrendingUp}
             isOpen={activeDropdown === 'overlays'}
             onToggle={() => toggleDropdown('overlays')}
           >
@@ -673,9 +673,9 @@ const FullscreenChartModal = ({
             {showReferenceLine && (
               <div className="px-3 py-1 flex items-center gap-2">
                 <span className="text-[10px] text-slate-400">Value:</span>
-                <input 
-                  type="number" 
-                  value={referenceValue} 
+                <input
+                  type="number"
+                  value={referenceValue}
                   onChange={(e) => setReferenceValue(Number(e.target.value))}
                   className="w-16 bg-slate-700 border border-slate-600 rounded px-2 py-0.5 text-xs text-white"
                 />
@@ -684,8 +684,8 @@ const FullscreenChartModal = ({
           </ToolDropdown>
 
           {/* Statistics */}
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant={showStatsPanel ? "secondary" : "ghost"}
             onClick={() => setShowStatsPanel(!showStatsPanel)}
             className={`gap-1.5 h-8 px-2.5 ${showStatsPanel ? 'bg-blue-600 hover:bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}`}
@@ -695,9 +695,9 @@ const FullscreenChartModal = ({
           </Button>
 
           {/* Analytics Menu */}
-          <ToolDropdown 
-            label="Analytics" 
-            icon={BrainCircuit} 
+          <ToolDropdown
+            label="Analytics"
+            icon={BrainCircuit}
             isOpen={activeDropdown === 'analytics'}
             onToggle={() => toggleDropdown('analytics')}
           >
@@ -706,17 +706,17 @@ const FullscreenChartModal = ({
             {showBollingerBands && (
               <div className="px-3 py-1 flex items-center gap-2">
                 <span className="text-[10px] text-slate-400">Period:</span>
-                <input 
-                  type="number" 
-                  value={bollingerPeriod} 
+                <input
+                  type="number"
+                  value={bollingerPeriod}
                   onChange={(e) => setBollingerPeriod(Number(e.target.value))}
                   className="w-12 bg-slate-700 border border-slate-600 rounded px-1 py-0.5 text-xs text-white"
                   min="5" max="50"
                 />
                 <span className="text-[10px] text-slate-400">σ:</span>
-                <input 
-                  type="number" 
-                  value={bollingerStdDev} 
+                <input
+                  type="number"
+                  value={bollingerStdDev}
                   onChange={(e) => setBollingerStdDev(Number(e.target.value))}
                   className="w-10 bg-slate-700 border border-slate-600 rounded px-1 py-0.5 text-xs text-white"
                   min="1" max="4" step="0.5"
@@ -727,9 +727,9 @@ const FullscreenChartModal = ({
             {showRSI && (
               <div className="px-3 py-1 flex items-center gap-2">
                 <span className="text-[10px] text-slate-400">Period:</span>
-                <input 
-                  type="number" 
-                  value={rsiPeriod} 
+                <input
+                  type="number"
+                  value={rsiPeriod}
                   onChange={(e) => setRsiPeriod(Number(e.target.value))}
                   className="w-12 bg-slate-700 border border-slate-600 rounded px-1 py-0.5 text-xs text-white"
                   min="5" max="30"
@@ -743,9 +743,9 @@ const FullscreenChartModal = ({
             {showAnomalies && (
               <div className="px-3 py-1 flex items-center gap-2">
                 <span className="text-[10px] text-slate-400">Threshold (σ):</span>
-                <input 
-                  type="number" 
-                  value={anomalyThreshold} 
+                <input
+                  type="number"
+                  value={anomalyThreshold}
                   onChange={(e) => setAnomalyThreshold(Number(e.target.value))}
                   className="w-12 bg-slate-700 border border-slate-600 rounded px-1 py-0.5 text-xs text-white"
                   min="1" max="5" step="0.5"
@@ -757,9 +757,9 @@ const FullscreenChartModal = ({
           </ToolDropdown>
 
           {/* Forecast Menu */}
-          <ToolDropdown 
-            label="Forecast" 
-            icon={Sparkles} 
+          <ToolDropdown
+            label="Forecast"
+            icon={Sparkles}
             isOpen={activeDropdown === 'forecast'}
             onToggle={() => toggleDropdown('forecast')}
           >
@@ -768,9 +768,9 @@ const FullscreenChartModal = ({
               <>
                 <div className="px-3 py-1 flex items-center gap-2">
                   <span className="text-[10px] text-slate-400">Periods:</span>
-                  <input 
-                    type="number" 
-                    value={forecastPeriods} 
+                  <input
+                    type="number"
+                    value={forecastPeriods}
                     onChange={(e) => setForecastPeriods(Number(e.target.value))}
                     className="w-12 bg-slate-700 border border-slate-600 rounded px-1 py-0.5 text-xs text-white"
                     min="5" max="50"
@@ -782,9 +782,9 @@ const FullscreenChartModal = ({
           </ToolDropdown>
 
           {/* Chart Type Selector */}
-          <ToolDropdown 
-            label="Chart" 
-            icon={CHART_TYPES.find(c => c.value === chartType)?.icon || LineChart} 
+          <ToolDropdown
+            label="Chart"
+            icon={CHART_TYPES.find(c => c.value === chartType)?.icon || LineChart}
             isOpen={activeDropdown === 'chartType'}
             onToggle={() => toggleDropdown('chartType')}
           >
@@ -792,20 +792,20 @@ const FullscreenChartModal = ({
             {CHART_TYPES.map(type => {
               const Icon = type.icon;
               return (
-                <MenuItem 
+                <MenuItem
                   key={type.value}
-                  label={type.label} 
+                  label={type.label}
                   icon={Icon}
-                  checked={chartType === type.value} 
-                  onClick={() => setChartType(type.value)} 
+                  checked={chartType === type.value}
+                  onClick={() => setChartType(type.value)}
                 />
               );
             })}
           </ToolDropdown>
 
           {/* Annotations Button */}
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant={showAnnotationPanel ? "secondary" : "ghost"}
             onClick={() => setShowAnnotationPanel(!showAnnotationPanel)}
             className={`gap-1.5 h-8 px-2.5 ${showAnnotationPanel ? 'bg-purple-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}`}
@@ -818,8 +818,8 @@ const FullscreenChartModal = ({
           </Button>
 
           {/* Threshold Alerts Button */}
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant={showThresholdAlerts ? "secondary" : "ghost"}
             onClick={() => setShowThresholdAlerts(true)}
             className={`gap-1.5 h-8 px-2.5 ${thresholdAlerts.some(a => a.enabled) ? 'text-amber-400' : 'text-slate-300'} hover:bg-slate-800 hover:text-white`}
@@ -832,9 +832,9 @@ const FullscreenChartModal = ({
           </Button>
 
           {/* Range Menu */}
-          <ToolDropdown 
-            label="Range" 
-            icon={Activity} 
+          <ToolDropdown
+            label="Range"
+            icon={Activity}
             isOpen={activeDropdown === 'range'}
             onToggle={() => toggleDropdown('range')}
           >
@@ -847,9 +847,9 @@ const FullscreenChartModal = ({
               <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setPlaybackIndex(0)}>
                 <SkipBack className="w-3 h-3" />
               </Button>
-              <Button 
-                size="sm" 
-                variant={isPlaying ? "secondary" : "ghost"} 
+              <Button
+                size="sm"
+                variant={isPlaying ? "secondary" : "ghost"}
                 className="h-6 w-6 p-0"
                 onClick={() => setIsPlaying(!isPlaying)}
               >
@@ -862,9 +862,9 @@ const FullscreenChartModal = ({
           </ToolDropdown>
 
           {/* Measure Menu */}
-          <ToolDropdown 
-            label="Measure" 
-            icon={Target} 
+          <ToolDropdown
+            label="Measure"
+            icon={Target}
             isOpen={activeDropdown === 'measure'}
             onToggle={() => toggleDropdown('measure')}
           >
@@ -874,9 +874,9 @@ const FullscreenChartModal = ({
           </ToolDropdown>
 
           {/* Lines Menu */}
-          <ToolDropdown 
-            label="Lines" 
-            icon={LineChart} 
+          <ToolDropdown
+            label="Lines"
+            icon={LineChart}
             isOpen={activeDropdown === 'lines'}
             onToggle={() => toggleDropdown('lines')}
           >
@@ -888,9 +888,9 @@ const FullscreenChartModal = ({
           </ToolDropdown>
 
           {/* Export Menu */}
-          <ToolDropdown 
-            label="Export" 
-            icon={Download} 
+          <ToolDropdown
+            label="Export"
+            icon={Download}
             isOpen={activeDropdown === 'export'}
             onToggle={() => toggleDropdown('export')}
           >
@@ -899,8 +899,8 @@ const FullscreenChartModal = ({
           </ToolDropdown>
 
           {/* History & Save */}
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant="ghost"
             onClick={() => setIsHistoryModalOpen(true)}
             className="gap-1.5 h-8 px-2.5 text-slate-300 hover:bg-slate-800 hover:text-white"
@@ -910,8 +910,8 @@ const FullscreenChartModal = ({
             <span className="text-xs">History</span>
           </Button>
 
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant="ghost"
             onClick={() => setIsSaveModalOpen(true)}
             className="gap-1.5 h-8 px-2.5 text-slate-300 hover:bg-slate-800 hover:text-white"
@@ -928,8 +928,8 @@ const FullscreenChartModal = ({
         <div className="flex items-center gap-2">
           {/* View Mode Selector */}
           <div className="relative">
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               variant="outline"
               onClick={() => setShowViewDropdown(!showViewDropdown)}
               className="gap-2 text-slate-300 border-slate-700 bg-slate-800 hover:bg-slate-700 h-8"
@@ -953,8 +953,8 @@ const FullscreenChartModal = ({
           </div>
 
           {/* Comparison Mode Toggle */}
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant={comparisonMode ? "secondary" : "outline"}
             onClick={() => setComparisonMode(!comparisonMode)}
             className={`gap-1.5 h-8 ${comparisonMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'text-slate-300 border-slate-700 bg-slate-800 hover:bg-slate-700'}`}
@@ -994,17 +994,16 @@ const FullscreenChartModal = ({
           <div className="w-px h-5 bg-slate-700 mx-1" />
 
           {/* Status Badge */}
-          <div className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-medium ${
-            isStableMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700/50 text-slate-400'
-          }`}>
+          <div className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-medium ${isStableMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700/50 text-slate-400'
+            }`}>
             <div className={`w-1.5 h-1.5 rounded-full ${isStableMode ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
             {isStableMode ? 'STABLE' : 'BASELINE'}
           </div>
 
           {/* Close Button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-7 w-7 text-slate-400 hover:text-white hover:bg-slate-800 ml-1"
             onClick={handleAttemptClose}
             title="Close Fullscreen (ESC)"
@@ -1033,8 +1032,8 @@ const FullscreenChartModal = ({
                 <span className="text-sm font-medium text-emerald-400">STABLE Mode</span>
               </div>
               <div className="flex-1 min-h-0">
-                <PortfolioFlowChart 
-                  isStableMode={true} 
+                <PortfolioFlowChart
+                  isStableMode={true}
                   data={rangeFilter === 'all' ? stableHistory : stableHistory.slice(rangeFilter === 'last50' ? -50 : -100)}
                   viewMode={viewMode}
                   isFullscreen={true}
@@ -1045,7 +1044,7 @@ const FullscreenChartModal = ({
                 />
               </div>
             </div>
-            
+
             {/* Baseline Chart */}
             <div className="h-full bg-slate-900 rounded-lg border border-slate-800 p-4 flex flex-col">
               <div className="flex items-center gap-2 mb-2 flex-none">
@@ -1053,8 +1052,8 @@ const FullscreenChartModal = ({
                 <span className="text-sm font-medium text-slate-400">Baseline Mode</span>
               </div>
               <div className="flex-1 min-h-0">
-                <PortfolioFlowChart 
-                  isStableMode={false} 
+                <PortfolioFlowChart
+                  isStableMode={false}
                   data={rangeFilter === 'all' ? baselineHistory : baselineHistory.slice(rangeFilter === 'last50' ? -50 : -100)}
                   viewMode={viewMode}
                   isFullscreen={true}
@@ -1072,8 +1071,8 @@ const FullscreenChartModal = ({
             {/* Main Chart Area */}
             <div className={`${(showRSI || showMACD) ? 'flex-1' : 'h-full'} min-h-0 bg-slate-900 rounded-lg border border-slate-800 p-4`}>
               {chartType === 'line' && (
-                <PortfolioFlowChart 
-                  isStableMode={isStableMode} 
+                <PortfolioFlowChart
+                  isStableMode={isStableMode}
                   data={currentData}
                   viewMode={viewMode}
                   isFullscreen={true}
@@ -1105,10 +1104,9 @@ const FullscreenChartModal = ({
                   <span className="text-[10px] text-slate-400 font-medium">RSI ({rsiPeriod})</span>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-slate-500">Current: </span>
-                    <span className={`text-xs font-medium ${
-                      rsiData[rsiData.length - 1] > 70 ? 'text-red-400' : 
+                    <span className={`text-xs font-medium ${rsiData[rsiData.length - 1] > 70 ? 'text-red-400' :
                       rsiData[rsiData.length - 1] < 30 ? 'text-emerald-400' : 'text-slate-300'
-                    }`}>
+                      }`}>
                       {rsiData[rsiData.length - 1]?.toFixed(1) || '--'}
                     </span>
                   </div>
@@ -1118,8 +1116,8 @@ const FullscreenChartModal = ({
                     const height = Math.max(2, (val / 100) * 100);
                     const bgColor = val > 70 ? 'bg-red-500/60' : val < 30 ? 'bg-emerald-500/60' : 'bg-purple-500/40';
                     return (
-                      <div 
-                        key={i} 
+                      <div
+                        key={i}
                         className={`flex-1 ${bgColor} rounded-t-sm transition-all`}
                         style={{ height: `${height}%` }}
                         title={`RSI: ${val.toFixed(1)}`}
@@ -1152,8 +1150,8 @@ const FullscreenChartModal = ({
       </div>
 
       {/* --- SAVE MODAL --- */}
-      <SimpleModal 
-        isOpen={isSaveModalOpen} 
+      <SimpleModal
+        isOpen={isSaveModalOpen}
         onClose={() => setIsSaveModalOpen(false)}
         title="Save Analysis Session"
         footer={
@@ -1168,14 +1166,14 @@ const FullscreenChartModal = ({
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-xs font-medium text-slate-400">Session Name</label>
-            <input 
-               autoFocus
-               type="text" 
-               className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
-               placeholder="e.g. Q4 Analysis - Zoom Level 2"
-               value={sessionNameInput}
-               onChange={e => setSessionNameInput(e.target.value)}
-                         onKeyDown={e => e.key === 'Enter' && handleSaveSession()}
+            <input
+              autoFocus
+              type="text"
+              className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+              placeholder="e.g. Q4 Analysis - Zoom Level 2"
+              value={sessionNameInput}
+              onChange={e => setSessionNameInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSaveSession()}
             />
           </div>
           <p className="text-xs text-slate-500">
@@ -1185,8 +1183,8 @@ const FullscreenChartModal = ({
       </SimpleModal>
 
       {/* --- HISTORY MODAL --- */}
-      <SimpleModal 
-        isOpen={isHistoryModalOpen} 
+      <SimpleModal
+        isOpen={isHistoryModalOpen}
         onClose={() => setIsHistoryModalOpen(false)}
         title="Analysis History"
       >
@@ -1197,8 +1195,8 @@ const FullscreenChartModal = ({
             </div>
           ) : (
             savedSessions.map(session => (
-              <div 
-                key={session.id} 
+              <div
+                key={session.id}
                 className="group flex items-center justify-between p-3 rounded bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 hover:border-slate-600 transition-all cursor-pointer"
                 onClick={() => handleLoadSession(session)}
               >
@@ -1213,9 +1211,9 @@ const FullscreenChartModal = ({
                     </div>
                   </div>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-8 w-8 text-slate-500 hover:text-red-400 hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={(e) => handleDeleteSession(session.id, e)}
                 >
@@ -1228,7 +1226,7 @@ const FullscreenChartModal = ({
       </SimpleModal>
 
       {/* --- UNSAVED CHANGES ALERT --- */}
-      <SimpleAlert 
+      <SimpleAlert
         isOpen={isUnsavedAlertOpen}
         title="Unsaved Changes"
         description="You have ongoing analysis work that hasn't been saved. Do you want to save your progress before closing?"
@@ -1240,14 +1238,14 @@ const FullscreenChartModal = ({
       />
 
       {/* --- CORRELATION MATRIX PANEL --- */}
-      <CorrelationMatrixPanel 
+      <CorrelationMatrixPanel
         data={currentData}
         isOpen={showCorrelationMatrix}
         onClose={() => setShowCorrelationMatrix(false)}
       />
 
       {/* --- ANNOTATION PANEL --- */}
-      <AnnotationPanel 
+      <AnnotationPanel
         annotations={annotations}
         onAdd={handleAddAnnotation}
         onUpdate={handleUpdateAnnotation}
@@ -1258,7 +1256,7 @@ const FullscreenChartModal = ({
       />
 
       {/* --- THRESHOLD ALERTS MODAL --- */}
-      <ThresholdAlerts 
+      <ThresholdAlerts
         alerts={thresholdAlerts}
         onAdd={handleAddThresholdAlert}
         onUpdate={handleUpdateThresholdAlert}
@@ -1269,10 +1267,10 @@ const FullscreenChartModal = ({
       />
 
       {/* --- DRILLDOWN MODAL --- */}
-      <DrilldownModal 
+      <DrilldownModal
         isOpen={showDrilldown}
         onClose={() => setShowDrilldown(false)}
-        dataPoint={drilldownPoint}
+        dataPoint={null}
         allData={currentData}
       />
     </div>

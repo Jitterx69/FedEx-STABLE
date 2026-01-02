@@ -21,10 +21,19 @@ const METRIC_COLORS = {
   escalated: '#ef4444',
 };
 
-const ScatterPlotChart = ({ 
-  data, 
-  xMetric: initialXMetric = 'active', 
-  yMetric: initialYMetric = 'recovered' 
+const getCorrelationLabel = (r: number): { text: string; color: string } => {
+  const abs = Math.abs(r);
+  if (abs > 0.8) return { text: 'Very Strong', color: r > 0 ? 'text-emerald-400' : 'text-red-400' };
+  if (abs > 0.6) return { text: 'Strong', color: r > 0 ? 'text-emerald-400' : 'text-red-400' };
+  if (abs > 0.4) return { text: 'Moderate', color: r > 0 ? 'text-blue-400' : 'text-amber-400' };
+  if (abs > 0.2) return { text: 'Weak', color: 'text-slate-400' };
+  return { text: 'Very Weak', color: 'text-slate-500' };
+};
+
+const ScatterPlotChart = ({
+  data,
+  xMetric: initialXMetric = 'active',
+  yMetric: initialYMetric = 'recovered'
 }: Props) => {
   const [xMetric, setXMetric] = useState(initialXMetric);
   const [yMetric, setYMetric] = useState(initialYMetric);
@@ -32,9 +41,9 @@ const ScatterPlotChart = ({
 
   const { scatterData, correlation, regression, domain } = useMemo(() => {
     if (!data || data.length === 0) {
-      return { 
-        scatterData: [], 
-        correlation: 0, 
+      return {
+        scatterData: [],
+        correlation: 0,
         regression: { slope: 0, intercept: 0, rSquared: 0 },
         domain: { x: [0, 100], y: [0, 100] }
       };
@@ -48,7 +57,7 @@ const ScatterPlotChart = ({
 
     const xVals = data.map(d => d[xMetric]);
     const yVals = data.map(d => d[yMetric]);
-    
+
     const correlation = pearsonCorrelation(xVals, yVals);
     const regression = linearRegression(yVals);
 
@@ -79,37 +88,7 @@ const ScatterPlotChart = ({
     );
   }
 
-  const getCorrelationLabel = (r: number): { text: string; color: string } => {
-    const abs = Math.abs(r);
-    if (abs > 0.8) return { text: 'Very Strong', color: r > 0 ? 'text-emerald-400' : 'text-red-400' };
-    if (abs > 0.6) return { text: 'Strong', color: r > 0 ? 'text-emerald-400' : 'text-red-400' };
-    if (abs > 0.4) return { text: 'Moderate', color: r > 0 ? 'text-blue-400' : 'text-amber-400' };
-    if (abs > 0.2) return { text: 'Weak', color: 'text-slate-400' };
-    return { text: 'Very Weak', color: 'text-slate-500' };
-  };
-
   const corrLabel = getCorrelationLabel(correlation);
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (!active || !payload || payload.length === 0) return null;
-    const d = payload[0].payload;
-    
-    return (
-      <div className="bg-slate-900/95 border border-slate-700 rounded-lg p-3 text-xs shadow-xl">
-        <div className="font-medium text-slate-200 mb-2">Time: {d.time}</div>
-        <div className="space-y-1">
-          <div className="flex justify-between gap-4">
-            <span className="text-slate-400 capitalize">{xMetric}:</span>
-            <span style={{ color: METRIC_COLORS[xMetric] }}>{d.x.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between gap-4">
-            <span className="text-slate-400 capitalize">{yMetric}:</span>
-            <span style={{ color: METRIC_COLORS[yMetric] }}>{d.y.toFixed(2)}</span>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -120,8 +99,8 @@ const ScatterPlotChart = ({
         </div>
         <div className="flex items-center gap-2 text-[10px]">
           <label className="flex items-center gap-1">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={showTrendLine}
               onChange={(e) => setShowTrendLine(e.target.checked)}
               className="w-3 h-3"
@@ -135,7 +114,7 @@ const ScatterPlotChart = ({
       <div className="flex items-center gap-4 mb-2 text-[10px]">
         <div className="flex items-center gap-1">
           <span className="text-slate-500">X:</span>
-          <select 
+          <select
             value={xMetric}
             onChange={(e) => setXMetric(e.target.value as typeof xMetric)}
             className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white"
@@ -147,7 +126,7 @@ const ScatterPlotChart = ({
         </div>
         <div className="flex items-center gap-1">
           <span className="text-slate-500">Y:</span>
-          <select 
+          <select
             value={yMetric}
             onChange={(e) => setYMetric(e.target.value as typeof yMetric)}
             className="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-white"
@@ -168,37 +147,37 @@ const ScatterPlotChart = ({
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-            <XAxis 
-              type="number" 
-              dataKey="x" 
+            <XAxis
+              type="number"
+              dataKey="x"
               name={xMetric}
               domain={domain.x as [number, number]}
               tick={{ fontSize: 10, fill: '#64748b' }}
               axisLine={{ stroke: '#334155' }}
-              label={{ 
-                value: xMetric.charAt(0).toUpperCase() + xMetric.slice(1), 
-                position: 'insideBottom', 
+              label={{
+                value: xMetric.charAt(0).toUpperCase() + xMetric.slice(1),
+                position: 'insideBottom',
                 offset: -5,
                 style: { fontSize: 10, fill: METRIC_COLORS[xMetric] }
               }}
             />
-            <YAxis 
-              type="number" 
-              dataKey="y" 
+            <YAxis
+              type="number"
+              dataKey="y"
               name={yMetric}
               domain={domain.y as [number, number]}
               tick={{ fontSize: 10, fill: '#64748b' }}
               axisLine={{ stroke: '#334155' }}
               width={45}
-              label={{ 
-                value: yMetric.charAt(0).toUpperCase() + yMetric.slice(1), 
-                angle: -90, 
+              label={{
+                value: yMetric.charAt(0).toUpperCase() + yMetric.slice(1),
+                angle: -90,
                 position: 'insideLeft',
                 style: { fontSize: 10, fill: METRIC_COLORS[yMetric] }
               }}
             />
-            <Tooltip content={<CustomTooltip />} />
-            
+            <Tooltip content={<CustomTooltip xMetric={xMetric} yMetric={yMetric} />} />
+
             {/* Trend line using simple linear approach */}
             {showTrendLine && scatterData.length > 1 && (
               <ReferenceLine
@@ -211,9 +190,9 @@ const ScatterPlotChart = ({
                 strokeDasharray="6 4"
               />
             )}
-            
-            <Scatter 
-              data={scatterData} 
+
+            <Scatter
+              data={scatterData}
               fill="#8b5cf6"
               isAnimationActive={false}
             />
@@ -228,6 +207,27 @@ const ScatterPlotChart = ({
         <span>
           {correlation > 0 ? 'Positive' : correlation < 0 ? 'Negative' : 'No'} correlation
         </span>
+      </div>
+    </div>
+  );
+};
+
+const CustomTooltip = ({ active, payload, xMetric, yMetric }: any) => {
+  if (!active || !payload || payload.length === 0) return null;
+  const d = payload[0].payload;
+
+  return (
+    <div className="bg-slate-900/95 border border-slate-700 rounded-lg p-3 text-xs shadow-xl">
+      <div className="font-medium text-slate-200 mb-2">Time: {d.time}</div>
+      <div className="space-y-1">
+        <div className="flex justify-between gap-4">
+          <span className="text-slate-400 capitalize">{xMetric}:</span>
+          <span style={{ color: METRIC_COLORS[xMetric as keyof typeof METRIC_COLORS] }}>{d.x.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-slate-400 capitalize">{yMetric}:</span>
+          <span style={{ color: METRIC_COLORS[yMetric as keyof typeof METRIC_COLORS] }}>{d.y.toFixed(2)}</span>
+        </div>
       </div>
     </div>
   );
