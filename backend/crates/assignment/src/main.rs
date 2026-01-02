@@ -30,14 +30,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Starting Assignment Engine (Round-Robin)...");
 
     // 1. Database Connection (to read Ingested accounts)
+    let database_url = std::env::var("POSTGRES_URL").expect("POSTGRES_URL must be set");
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect("postgres://stable_user:stable_password@localhost:5432/stable_core")
+        .connect(&database_url)
         .await?;
 
     // 2. Kafka Producer (to emit AssignmentCreated)
+    let kafka_bootstrap = std::env::var("KAFKA_BOOTSTRAP").expect("KAFKA_BOOTSTRAP must be set");
     let producer: FutureProducer = ClientConfig::new()
-        .set("bootstrap.servers", "localhost:19092")
+        .set("bootstrap.servers", &kafka_bootstrap)
         .set("message.timeout.ms", "5000")
         .create()?;
 

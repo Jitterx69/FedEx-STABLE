@@ -5,7 +5,7 @@ services:
   # Frontend
   # -----------------------------------------------------------------
   frontend:
-    build: 
+    build:
       context: ./frontend
     container_name: stable-frontend
     ports:
@@ -23,7 +23,7 @@ services:
       context: .
       dockerfile: backend/crates/Dockerfile
     container_name: stable-backend-gateway
-    command: ["gateway"]
+    command: [ "gateway" ]
     ports:
       - "8080:8080"
     environment:
@@ -44,11 +44,11 @@ services:
       context: .
       dockerfile: backend/crates/Dockerfile
     container_name: stable-backend-ingress
-    command: ["ingress"]
+    command: [ "ingress" ]
     # Internal port 3000, not strictly needed to expose if only gateway talks to it, 
     # but exposing for debugging or direct access if needed.
     ports:
-      - "3000:3000" 
+      - "3000:3000"
     environment:
       - KAFKA_BOOTSTRAP=redpanda:9092
       - RUST_LOG=info
@@ -61,11 +61,12 @@ services:
       context: .
       dockerfile: backend/crates/Dockerfile
     container_name: stable-backend-admin
-    command: ["admin"]
+    command: [ "admin" ]
     ports:
       - "3001:3001"
     environment:
       - KAFKA_BOOTSTRAP=redpanda:9092
+      - POSTGRES_URL=postgres://stable_user:stable_password@postgres:5432/stable_core
       - RUST_LOG=info
     depends_on:
       redpanda:
@@ -76,9 +77,10 @@ services:
       context: .
       dockerfile: backend/crates/Dockerfile
     container_name: stable-backend-regulator
-    command: ["regulator"]
+    command: [ "regulator" ]
     environment:
       - KAFKA_BOOTSTRAP=redpanda:9092
+      - POSTGRES_URL=postgres://stable_user:stable_password@postgres:5432/stable_core
       - RUST_LOG=info
     depends_on:
       redpanda:
@@ -89,9 +91,10 @@ services:
       context: .
       dockerfile: backend/crates/Dockerfile
     container_name: stable-backend-projection
-    command: ["projection"]
+    command: [ "projection" ]
     environment:
       - KAFKA_BOOTSTRAP=redpanda:9092
+      - POSTGRES_URL=postgres://stable_user:stable_password@postgres:5432/stable_core
       - RUST_LOG=info
     depends_on:
       redpanda:
@@ -102,9 +105,24 @@ services:
       context: .
       dockerfile: backend/crates/Dockerfile
     container_name: stable-backend-assignment
-    command: ["assignment"]
+    command: [ "assignment" ]
     environment:
       - KAFKA_BOOTSTRAP=redpanda:9092
+      - POSTGRES_URL=postgres://stable_user:stable_password@postgres:5432/stable_core
+      - RUST_LOG=info
+    depends_on:
+      redpanda:
+        condition: service_healthy
+
+  backend-lifecycle:
+    build:
+      context: .
+      dockerfile: backend/crates/Dockerfile
+    container_name: stable-backend-lifecycle
+    command: [ "lifecycle" ]
+    environment:
+      - KAFKA_BOOTSTRAP=redpanda:9092
+      - POSTGRES_URL=postgres://stable_user:stable_password@postgres:5432/stable_core
       - RUST_LOG=info
     depends_on:
       redpanda:
@@ -148,7 +166,7 @@ services:
     volumes:
       - redpanda-data:/var/lib/redpanda/data
     healthcheck:
-      test: ["CMD-SHELL", "rpk cluster health"]
+      test: [ "CMD-SHELL", "rpk cluster health" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -165,7 +183,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U stable_user -d stable_core"]
+      test: [ "CMD-SHELL", "pg_isready -U stable_user -d stable_core" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -178,7 +196,7 @@ services:
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 5
