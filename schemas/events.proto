@@ -32,8 +32,23 @@ message EventEnvelope {
     InternalEstimateGenerated internal_estimate_generated = 12;
     RegulatedSignalReleased regulated_signal_released = 13;
     GovernanceConfigUpdated governance_config_updated = 14;
+    AccountRecovered account_recovered = 15;
+    AccountEscalated account_escalated = 16;
   }
 }
+
+// Event: An account has been recovered (paid off)
+message AccountRecovered {
+  string account_id = 1;
+  double recovered_amount = 2;
+}
+
+// Event: An account has been escalated (failed to recover)
+message AccountEscalated {
+  string account_id = 1;
+  string reason = 2; // e.g. "Contact failed", "Refusal"
+  }
+
 
 // Event: A new account has entered the system
 message AccountIngested {

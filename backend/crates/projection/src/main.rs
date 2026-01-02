@@ -26,9 +26,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Starting Projection Engine...");
 
     // 1. Connect to DB
+    let database_url = std::env::var("POSTGRES_URL").expect("POSTGRES_URL must be set");
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect("postgres://stable_user:stable_password@localhost:5435/stable_core")
+        .connect(&database_url)
         .await?;
 
     // Run Migrations
@@ -38,9 +39,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let state = Arc::new(ProjectionState { db_pool: pool });
 
     // 2. Setup Kafka Consumer
+    let kafka_bootstrap = std::env::var("KAFKA_BOOTSTRAP").expect("KAFKA_BOOTSTRAP must be set");
     let consumer: StreamConsumer = ClientConfig::new()
         .set("group.id", "stable-projection-group")
-        .set("bootstrap.servers", "localhost:19092")
+        .set("bootstrap.servers", &kafka_bootstrap)
         .set("enable.partition.eof", "false")
         .set("session.timeout.ms", "6000")
         .set("enable.auto.commit", "true")
@@ -120,6 +122,18 @@ async fn process_event(envelope: proto::EventEnvelope, state: &Arc<ProjectionSta
                 if let Err(e) = tx.commit().await {
                    error!("Transaction failed for Assignment: {}", e);
                 }
+            }
+            proto::event_envelope::Payload::AccountRecovered(event) => {
+                let _ = sqlx::query("UPDATE accounts SET status = 'recovered', updated_at = NOW() WHERE account_id = $1")
+                    .bind(&event.account_id)
+                    .execute(&state.db_pool)
+                    .await;
+            }
+            proto::event_envelope::Payload::AccountEscalated(event) => {
+                let _ = sqlx::query("UPDATE accounts SET status = 'escalated', updated_at = NOW() WHERE account_id = $1")
+                    .bind(&event.account_id)
+                    .execute(&state.db_pool)
+                    .await;
             }
             _ => {
                 info!("Event type not handled by projection yet.");
