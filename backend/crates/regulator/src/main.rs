@@ -69,8 +69,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     let mut g = gov_state.lock().unwrap();
                                     g.information_sharpness = cfg.information_sharpness;
                                     g.noise_injection = cfg.noise_injection;
-                                    info!("Governance Params Updated: Sharpness={:.2}, Noise={:.2}", 
-                                        g.information_sharpness, g.noise_injection);
+                                    info!(
+                                        "Governance Params Updated: Sharpness={:.2}, Noise={:.2}",
+                                        g.information_sharpness, g.noise_injection
+                                    );
                                 }
                             }
                             _ => {}
@@ -84,17 +86,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn process_estimate(
-    estimate: proto::InternalEstimateGenerated, 
+    estimate: proto::InternalEstimateGenerated,
     gov: &Arc<Mutex<GovernanceState>>,
-    producer: &FutureProducer
+    producer: &FutureProducer,
 ) {
     let (sharpness, noise_amp) = {
         let g = gov.lock().unwrap();
         (g.information_sharpness, g.noise_injection)
     };
 
-    info!("Regulating Estimate for {}: Raw={:.2}, Sharpness={:.2}, Noise={:.2}", 
-        estimate.target_account_id, estimate.raw_recovery_probability, sharpness, noise_amp);
+    info!(
+        "Regulating Estimate for {}: Raw={:.2}, Sharpness={:.2}, Noise={:.2}",
+        estimate.target_account_id, estimate.raw_recovery_probability, sharpness, noise_amp
+    );
 
     // ---------------------------------------------------------
     // CORE LOGIC: INFORMATION REGULATION
