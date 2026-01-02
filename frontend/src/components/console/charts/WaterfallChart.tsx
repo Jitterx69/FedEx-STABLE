@@ -26,15 +26,15 @@ interface Props {
 const WaterfallChart = ({ data, showCumulative = true }: Props) => {
   const waterfallData = useMemo((): WaterfallEntry[] => {
     if (!data || data.length === 0) return [];
-    
+
     // Aggregate the data
     const totalActive = data.reduce((sum, d) => sum + d.active, 0);
     const totalRecovered = data.reduce((sum, d) => sum + d.recovered, 0);
     const totalEscalated = data.reduce((sum, d) => sum + d.escalated, 0);
-    
+
     const entries: WaterfallEntry[] = [];
     let cumulative = 0;
-    
+
     // Starting point
     entries.push({
       name: 'Start',
@@ -44,7 +44,7 @@ const WaterfallChart = ({ data, showCumulative = true }: Props) => {
       isTotal: true,
       fill: '#64748b'
     });
-    
+
     // Active (positive)
     entries.push({
       name: 'Active',
@@ -55,7 +55,7 @@ const WaterfallChart = ({ data, showCumulative = true }: Props) => {
       fill: '#3b82f6'
     });
     cumulative += totalActive;
-    
+
     // Recovered (positive outcome, but reduces active)
     entries.push({
       name: 'Recovered',
@@ -66,7 +66,7 @@ const WaterfallChart = ({ data, showCumulative = true }: Props) => {
       fill: '#10b981'
     });
     cumulative += totalRecovered;
-    
+
     // Escalated (negative outcome)
     entries.push({
       name: 'Escalated',
@@ -77,7 +77,7 @@ const WaterfallChart = ({ data, showCumulative = true }: Props) => {
       fill: '#ef4444'
     });
     cumulative -= totalEscalated;
-    
+
     // Net position
     const net = totalRecovered - totalEscalated;
     entries.push({
@@ -89,7 +89,7 @@ const WaterfallChart = ({ data, showCumulative = true }: Props) => {
       isPositive: net >= 0,
       fill: net >= 0 ? '#10b981' : '#ef4444'
     });
-    
+
     return entries;
   }, [data]);
 
@@ -111,67 +111,6 @@ const WaterfallChart = ({ data, showCumulative = true }: Props) => {
     );
   }
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (!active || !payload || payload.length === 0) return null;
-    const entry = payload[0].payload as WaterfallEntry;
-    
-    return (
-      <div className="bg-slate-900/95 border border-slate-700 rounded-lg p-3 text-xs shadow-xl">
-        <div className="font-medium text-slate-200 mb-2">{entry.name}</div>
-        <div className="space-y-1">
-          <div className="flex justify-between gap-4">
-            <span className="text-slate-400">Change:</span>
-            <span className={entry.isPositive || entry.value >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-              {entry.value >= 0 ? '+' : ''}{entry.value.toFixed(0)}
-            </span>
-          </div>
-          {showCumulative && !entry.isTotal && (
-            <div className="flex justify-between gap-4">
-              <span className="text-slate-400">Running Total:</span>
-              <span className="text-white">{entry.end.toFixed(0)}</span>
-            </div>
-          )}
-          {entry.isTotal && (
-            <div className="flex justify-between gap-4">
-              <span className="text-slate-400">Total:</span>
-              <span className="text-white">{entry.end.toFixed(0)}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  // Custom bar with floating effect for waterfall
-  const WaterfallBar = (props: any) => {
-    const { x, y, width, height, payload } = props;
-    const entry = payload as WaterfallEntry;
-    
-    // For waterfall, we need to position bars based on start/end
-    const chartHeight = 200; // Approximate, would need actual from ResponsiveContainer
-    const [domainMin, domainMax] = domain;
-    const range = domainMax - domainMin;
-    
-    const startY = ((domainMax - entry.start) / range) * chartHeight;
-    const endY = ((domainMax - entry.end) / range) * chartHeight;
-    
-    const barY = Math.min(startY, endY);
-    const barHeight = Math.abs(endY - startY);
-    
-    return (
-      <rect
-        x={x}
-        y={barY}
-        width={width}
-        height={Math.max(barHeight, 2)}
-        fill={entry.fill}
-        rx={4}
-        ry={4}
-        className="transition-all hover:opacity-80"
-      />
-    );
-  };
-
   return (
     <div className="w-full h-full">
       <div className="text-xs text-slate-400 mb-2 font-medium">
@@ -180,22 +119,22 @@ const WaterfallChart = ({ data, showCumulative = true }: Props) => {
       <ResponsiveContainer width="100%" height="85%">
         <BarChart data={waterfallData} barCategoryGap="20%">
           <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-          <XAxis 
-            dataKey="name" 
+          <XAxis
+            dataKey="name"
             tick={{ fontSize: 10, fill: '#94a3b8' }}
             axisLine={{ stroke: '#334155' }}
             tickLine={false}
           />
-          <YAxis 
+          <YAxis
             domain={domain}
             tick={{ fontSize: 10, fill: '#64748b' }}
             axisLine={{ stroke: '#334155' }}
             width={50}
           />
-          <Tooltip content={<CustomTooltip />} cursor={false} />
+          <Tooltip content={<CustomTooltip showCumulative={showCumulative} />} cursor={false} />
           <ReferenceLine y={0} stroke="#64748b" strokeDasharray="3 3" />
-          <Bar 
-            dataKey="value" 
+          <Bar
+            dataKey="value"
             radius={[4, 4, 4, 4]}
             isAnimationActive={false}
           >
@@ -205,7 +144,7 @@ const WaterfallChart = ({ data, showCumulative = true }: Props) => {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      
+
       {/* Legend */}
       <div className="flex items-center justify-center gap-4 mt-2 text-[10px]">
         <div className="flex items-center gap-1">
@@ -220,6 +159,37 @@ const WaterfallChart = ({ data, showCumulative = true }: Props) => {
           <div className="w-3 h-2 rounded bg-red-500" />
           <span className="text-slate-400">Escalated</span>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const CustomTooltip = ({ active, payload, showCumulative }: any) => {
+  if (!active || !payload || payload.length === 0) return null;
+  const entry = payload[0].payload as WaterfallEntry;
+
+  return (
+    <div className="bg-slate-900/95 border border-slate-700 rounded-lg p-3 text-xs shadow-xl">
+      <div className="font-medium text-slate-200 mb-2">{entry.name}</div>
+      <div className="space-y-1">
+        <div className="flex justify-between gap-4">
+          <span className="text-slate-400">Change:</span>
+          <span className={entry.isPositive || entry.value >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+            {entry.value >= 0 ? '+' : ''}{entry.value.toFixed(0)}
+          </span>
+        </div>
+        {showCumulative && !entry.isTotal && (
+          <div className="flex justify-between gap-4">
+            <span className="text-slate-400">Running Total:</span>
+            <span className="text-white">{entry.end.toFixed(0)}</span>
+          </div>
+        )}
+        {entry.isTotal && (
+          <div className="flex justify-between gap-4">
+            <span className="text-slate-400">Total:</span>
+            <span className="text-white">{entry.end.toFixed(0)}</span>
+          </div>
+        )}
       </div>
     </div>
   );
