@@ -135,7 +135,9 @@ async fn process_estimate(
         schema_version: "1.0.0".to_string(),
         occurrence_time: Some(prost_types::Timestamp::from(std::time::SystemTime::now())),
         ingestion_time: Some(prost_types::Timestamp::from(std::time::SystemTime::now())),
-        payload: Some(proto::event_envelope::Payload::RegulatedSignalReleased(signal_event)),
+        payload: Some(proto::event_envelope::Payload::RegulatedSignalReleased(
+            signal_event,
+        )),
     };
 
     let mut buf = Vec::new();
@@ -147,6 +149,9 @@ async fn process_estimate(
     if let Err((e, _)) = producer.send(record, Duration::from_secs(5)).await {
         error!("Failed to publish regulated signal: {:?}", e);
     } else {
-        info!("Released Signal: Band={} (derived from raw {:.2})", priority_band, estimate.raw_recovery_probability);
+        info!(
+            "Released Signal: Band={} (derived from raw {:.2})",
+            priority_band, estimate.raw_recovery_probability
+        );
     }
 }
