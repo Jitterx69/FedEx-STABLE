@@ -102,12 +102,12 @@ async fn process_estimate(
     // ---------------------------------------------------------
     let mut rng = rand::thread_rng();
     let noise: f64 = rng.gen_range(-1.0..1.0) * noise_amp;
-    
+
     // We dampen the true signal by the sharpness factor
     // If Sharpness = 1.0, we see full raw. If 0.5, we see 50% raw + noise.
     // This is a simplified "Information Barrier" implementation.
     let regulated_score = (estimate.raw_recovery_probability * sharpness) + noise;
-    
+
     // Clamp to 0-1
     let final_score = regulated_score.max(0.0).min(1.0);
 
