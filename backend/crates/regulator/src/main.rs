@@ -34,8 +34,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         noise_injection: 0.1,       // Default: Low noise
     }));
 
-    let kafka_bootstrap = std::env::var("KAFKA_BOOTSTRAP")
-        .unwrap_or_else(|_| "localhost:19092".to_string());
+    let kafka_bootstrap =
+        std::env::var("KAFKA_BOOTSTRAP").unwrap_or_else(|_| "localhost:19092".to_string());
 
     // Kafka Consumer
     let consumer: StreamConsumer = ClientConfig::new()
@@ -60,12 +60,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     if let Ok(envelope) = proto::EventEnvelope::decode(payload) {
                         match envelope.event_type.as_str() {
                             "InternalEstimateGenerated" => {
-                                if let Some(proto::event_envelope::Payload::InternalEstimateGenerated(est)) = envelope.payload {
+                                if let Some(
+                                    proto::event_envelope::Payload::InternalEstimateGenerated(est),
+                                ) = envelope.payload
+                                {
                                     process_estimate(est, &gov_state, &producer).await;
                                 }
                             }
                             "GovernanceConfigUpdated" => {
-                                if let Some(proto::event_envelope::Payload::GovernanceConfigUpdated(cfg)) = envelope.payload {
+                                if let Some(
+                                    proto::event_envelope::Payload::GovernanceConfigUpdated(cfg),
+                                ) = envelope.payload
+                                {
                                     let mut g = gov_state.lock().unwrap();
                                     g.information_sharpness = cfg.information_sharpness;
                                     g.noise_injection = cfg.noise_injection;

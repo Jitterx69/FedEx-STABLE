@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Minimize2, ChevronDown, Download, TrendingUp, TrendingDown, Activity, BarChart3, LineChart as LineChartIcon, Check, AlertTriangle, Target, Calculator, Zap, Eye, EyeOff, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BarChart, Bar, LineChart, Line, Tooltip, ResponsiveContainer, Cell, XAxis, YAxis, CartesianGrid, ReferenceLine, Area, ComposedChart } from 'recharts';
+import { Bar, Line, Tooltip, ResponsiveContainer, Cell, XAxis, YAxis, CartesianGrid, ReferenceLine, Area, ComposedChart } from 'recharts';
 
 interface ChartDataPoint {
     time: number;
