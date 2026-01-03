@@ -59,7 +59,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 3. HTTP Client for AI
     let http_client = reqwest::Client::new();
-    let estimation_url = std::env::var("ESTIMATION_URL").unwrap_or_else(|_| "http://localhost:5001/predict".to_string());
+    let estimation_url = std::env::var("ESTIMATION_URL")
+        .unwrap_or_else(|_| "http://localhost:5001/predict".to_string());
 
     // Mock DCA Performance for Weighted Random
     let dca_ids = ["DCA_ALPHA", "DCA_BETA", "DCA_GAMMA"];
@@ -88,14 +89,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 days_past_due: account.days_past_due,
             };
 
-            let probability = match http_client.post(&estimation_url).json(&payload).send().await {
-                Ok(resp) => {
-                    match resp.json::<PredictionResponse>().await {
-                        Ok(data) => data.recovery_probability.unwrap_or(0.0),
-                        Err(e) => {
-                            error!("Failed to parse prediction response: {}", e);
-                            0.0
-                        }
+            let probability = match http_client
+                .post(&estimation_url)
+                .json(&payload)
+                .send()
+                .await
+            {
+                Ok(resp) => match resp.json::<PredictionResponse>().await {
+                    Ok(data) => data.recovery_probability.unwrap_or(0.0),
+                    Err(e) => {
+                        error!("Failed to parse prediction response: {}", e);
+                        0.0
                     }
                 },
                 Err(e) => {
@@ -104,8 +108,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             };
 
-            info!("Account {} | Balance: ${:.2} | DPD: {} | AI Probability: {:.1}%", 
-                account.account_id, account.outstanding_balance, account.days_past_due, probability * 100.0);
+            info!(
+                "Account {} | Balance: ${:.2} | DPD: {} | AI Probability: {:.1}%",
+                account.account_id,
+                account.outstanding_balance,
+                account.days_past_due,
+                probability * 100.0
+            );
 
             // C. Weighted Random Selection
             use rand::distributions::Distribution;
@@ -127,7 +136,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 schema_version: "1.0.0".to_string(),
                 occurrence_time: Some(prost_types::Timestamp::from(std::time::SystemTime::now())),
                 ingestion_time: Some(prost_types::Timestamp::from(std::time::SystemTime::now())),
-                payload: Some(proto::event_envelope::Payload::AssignmentCreated(assignment_event)),
+                payload: Some(proto::event_envelope::Payload::AssignmentCreated(
+                    assignment_event,
+                )),
             };
 
             // E. Publish to Kafka
@@ -141,7 +152,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 error!("Failed to publish assignment: {:?}", e);
             }
         }
-        
+
         // Wait a bit for projection to process the events and update status
         tokio::time::sleep(Duration::from_secs(1)).await;
     }

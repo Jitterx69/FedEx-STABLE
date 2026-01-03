@@ -1,9 +1,4 @@
-use axum::{
-    extract::State,
-    http::StatusCode,
-    routing::post,
-    Json, Router,
-};
+use axum::{extract::State, http::StatusCode, routing::post, Json, Router};
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::ClientConfig;
 use serde::Deserialize;
@@ -29,8 +24,8 @@ struct AppState {
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    let kafka_bootstrap = std::env::var("KAFKA_BOOTSTRAP")
-        .unwrap_or_else(|_| "localhost:19092".to_string());
+    let kafka_bootstrap =
+        std::env::var("KAFKA_BOOTSTRAP").unwrap_or_else(|_| "localhost:19092".to_string());
 
     let kafka_producer: FutureProducer = ClientConfig::new()
         .set("bootstrap.servers", &kafka_bootstrap)
@@ -46,7 +41,10 @@ async fn main() {
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.unwrap();
-    tracing::info!("Admin Service listening on {}", listener.local_addr().unwrap());
+    tracing::info!(
+        "Admin Service listening on {}",
+        listener.local_addr().unwrap()
+    );
     axum::serve(listener, app).await.unwrap();
 }
 
@@ -60,8 +58,11 @@ async fn update_controls(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<UpdateControlsRequest>,
 ) -> StatusCode {
-    tracing::info!("Updating Governance Controls: Sharpness={}, Noise={}", 
-        payload.information_sharpness, payload.noise_injection);
+    tracing::info!(
+        "Updating Governance Controls: Sharpness={}, Noise={}",
+        payload.information_sharpness,
+        payload.noise_injection
+    );
 
     let event = proto::GovernanceConfigUpdated {
         config_id: Uuid::new_v4().to_string(),
@@ -76,7 +77,9 @@ async fn update_controls(
         schema_version: "1.0.0".to_string(),
         occurrence_time: Some(prost_types::Timestamp::from(std::time::SystemTime::now())),
         ingestion_time: Some(prost_types::Timestamp::from(std::time::SystemTime::now())),
-        payload: Some(proto::event_envelope::Payload::GovernanceConfigUpdated(event)),
+        payload: Some(proto::event_envelope::Payload::GovernanceConfigUpdated(
+            event,
+        )),
     };
 
     let mut buf = Vec::new();
@@ -85,10 +88,14 @@ async fn update_controls(
 
     let record = FutureRecord::to("stable-events")
         .payload(&buf)
-        .key(&envelope.event_id); // This ensures ordering if partition key is consistent, but globally impacting config might want broadcast. 
-        // For simple single partition, this is fine.
+        .key(&envelope.event_id); // This ensures ordering if partition key is consistent, but globally impacting config might want broadcast.
+                                  // For simple single partition, this is fine.
 
-    match state.kafka_producer.send(record, Duration::from_secs(5)).await {
+    match state
+        .kafka_producer
+        .send(record, Duration::from_secs(5))
+        .await
+    {
         Ok(_) => StatusCode::OK,
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
     }

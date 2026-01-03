@@ -23,14 +23,15 @@ async fn main() {
     tracing_subscriber::fmt::init();
     tracing::info!("Starting STABLE Unified Gateway...");
 
-    let db_url = std::env::var("POSTGRES_URL")
-        .unwrap_or_else(|_| "postgres://stable_user:stable_password@localhost:5435/stable_core".to_string());
-    
-    let ingress_url = std::env::var("INGRESS_URL")
-        .unwrap_or_else(|_| "http://localhost:3000".to_string());
-        
-    let admin_url = std::env::var("ADMIN_URL")
-        .unwrap_or_else(|_| "http://localhost:3001".to_string());
+    let db_url = std::env::var("POSTGRES_URL").unwrap_or_else(|_| {
+        "postgres://stable_user:stable_password@localhost:5435/stable_core".to_string()
+    });
+
+    let ingress_url =
+        std::env::var("INGRESS_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
+
+    let admin_url =
+        std::env::var("ADMIN_URL").unwrap_or_else(|_| "http://localhost:3001".to_string());
 
     // 1. Database Connection (Read-Side)
     let pool = PgPoolOptions::new()
@@ -79,8 +80,9 @@ async fn health_check() -> &'static str {
 async fn proxy_ingest(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<Value>,
-) ->  impl axum::response::IntoResponse {
-    let resp = state.http_client
+) -> impl axum::response::IntoResponse {
+    let resp = state
+        .http_client
         .post(format!("{}/ingest/account", state.ingress_url))
         .json(&payload)
         .send()
@@ -90,9 +92,15 @@ async fn proxy_ingest(
         Ok(r) => {
             let status = axum::http::StatusCode::from_u16(r.status().as_u16())
                 .unwrap_or(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
-            (status, AxumJson(r.json::<Value>().await.unwrap_or_default()))
-        },
-        Err(_) => (axum::http::StatusCode::BAD_GATEWAY, AxumJson(serde_json::json!({"error": "Ingress unavailable"}))),
+            (
+                status,
+                AxumJson(r.json::<Value>().await.unwrap_or_default()),
+            )
+        }
+        Err(_) => (
+            axum::http::StatusCode::BAD_GATEWAY,
+            AxumJson(serde_json::json!({"error": "Ingress unavailable"})),
+        ),
     }
 }
 
@@ -101,7 +109,8 @@ async fn proxy_governance(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<Value>,
 ) -> impl axum::response::IntoResponse {
-    let resp = state.http_client
+    let resp = state
+        .http_client
         .post(format!("{}/governance/controls", state.admin_url))
         .json(&payload)
         .send()
@@ -111,9 +120,15 @@ async fn proxy_governance(
         Ok(r) => {
             let status = axum::http::StatusCode::from_u16(r.status().as_u16())
                 .unwrap_or(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
-            (status, AxumJson(r.json::<Value>().await.unwrap_or_default()))
-        },
-        Err(_) => (axum::http::StatusCode::BAD_GATEWAY, AxumJson(serde_json::json!({"error": "Admin unavailable"}))),
+            (
+                status,
+                AxumJson(r.json::<Value>().await.unwrap_or_default()),
+            )
+        }
+        Err(_) => (
+            axum::http::StatusCode::BAD_GATEWAY,
+            AxumJson(serde_json::json!({"error": "Admin unavailable"})),
+        ),
     }
 }
 
@@ -126,9 +141,7 @@ struct AccountView {
     days_past_due: i32,
 }
 
-async fn list_accounts(
-    State(state): State<Arc<AppState>>,
-) -> Json<Vec<AccountView>> {
+async fn list_accounts(State(state): State<Arc<AppState>>) -> Json<Vec<AccountView>> {
     let accounts = sqlx::query_as::<_, AccountView>(
         "SELECT account_id, outstanding_balance, status, days_past_due FROM accounts ORDER BY created_at DESC LIMIT 50"
     )
@@ -148,12 +161,10 @@ struct SystemStats {
     escalated: i64,
 }
 
-async fn get_system_stats(
-    State(state): State<Arc<AppState>>,
-) -> Json<SystemStats> {
+async fn get_system_stats(State(state): State<Arc<AppState>>) -> Json<SystemStats> {
     // Count by status
     // Note: status strings are lowercase in DB: 'ingested', 'assigned', 'active', 'recovered', 'escalated', 'closed'
-    
+
     // We can do a single query to do counts or multiple. A single GROUP BY is efficient.
     #[derive(sqlx::FromRow)]
     struct StatusCount {
@@ -166,7 +177,7 @@ async fn get_system_stats(
         SELECT status, COUNT(*) as count 
         FROM accounts 
         GROUP BY status
-        "#
+        "#,
     )
     .fetch_all(&state.db_pool)
     .await
@@ -219,7 +230,7 @@ async fn list_dca_assignments(
         JOIN accounts acc ON ass.account_id = acc.account_id
         WHERE ass.dca_id = $1
         ORDER BY acc.days_past_due DESC
-        "#
+        "#,
     )
     .bind(dca_id)
     .fetch_all(&state.db_pool)
@@ -234,7 +245,8 @@ async fn proxy_resolve(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<Value>,
 ) -> impl axum::response::IntoResponse {
-    let resp = state.http_client
+    let resp = state
+        .http_client
         .post(format!("{}/resolve/account", state.ingress_url))
         .json(&payload)
         .send()
@@ -244,9 +256,15 @@ async fn proxy_resolve(
         Ok(r) => {
             let status = axum::http::StatusCode::from_u16(r.status().as_u16())
                 .unwrap_or(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
-            (status, AxumJson(r.json::<Value>().await.unwrap_or_default()))
-        },
-        Err(_) => (axum::http::StatusCode::BAD_GATEWAY, AxumJson(serde_json::json!({"error": "Ingress unavailable"}))),
+            (
+                status,
+                AxumJson(r.json::<Value>().await.unwrap_or_default()),
+            )
+        }
+        Err(_) => (
+            axum::http::StatusCode::BAD_GATEWAY,
+            AxumJson(serde_json::json!({"error": "Ingress unavailable"})),
+        ),
     }
 }
 

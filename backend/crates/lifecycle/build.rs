@@ -1,7 +1,4 @@
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    prost_build::compile_protos(
-        &["../../../schemas/events.proto"],
-        &["../../../schemas/"]
-    )?;
+    prost_build::compile_protos(&["../../../schemas/events.proto"], &["../../../schemas/"])?;
     Ok(())
 }

@@ -1,9 +1,4 @@
-use axum::{
-    extract::State,
-    http::StatusCode,
-    routing::post,
-    Json, Router,
-};
+use axum::{extract::State, http::StatusCode, routing::post, Json, Router};
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::ClientConfig;
 use serde::{Deserialize, Serialize};
@@ -31,8 +26,8 @@ struct AppState {
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    let kafka_bootstrap = std::env::var("KAFKA_BOOTSTRAP")
-        .unwrap_or_else(|_| "localhost:19092".to_string());
+    let kafka_bootstrap =
+        std::env::var("KAFKA_BOOTSTRAP").unwrap_or_else(|_| "localhost:19092".to_string());
 
     // Initialize Kafka Producer
     let kafka_producer: FutureProducer = ClientConfig::new()
@@ -52,7 +47,10 @@ async fn main() {
 
     // Run Server
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    tracing::info!("Ingress Service listening on {}", listener.local_addr().unwrap());
+    tracing::info!(
+        "Ingress Service listening on {}",
+        listener.local_addr().unwrap()
+    );
     axum::serve(listener, app).await.unwrap();
 }
 
@@ -79,10 +77,11 @@ async fn ingest_account(
     };
 
     publish_event(
-        "AccountIngested", 
-        proto::event_envelope::Payload::AccountIngested(account_event), 
-        &state.kafka_producer
-    ).await
+        "AccountIngested",
+        proto::event_envelope::Payload::AccountIngested(account_event),
+        &state.kafka_producer,
+    )
+    .await
 }
 
 // Handler: Resolve Account
@@ -107,8 +106,9 @@ async fn resolve_account(
     publish_event(
         "AccountRecovered",
         proto::event_envelope::Payload::AccountRecovered(resolution_event),
-        &state.kafka_producer
-    ).await
+        &state.kafka_producer,
+    )
+    .await
 }
 
 // Helper to publish events

@@ -2,8 +2,8 @@ use prost::Message;
 use rand::Rng;
 use rdkafka::config::ClientConfig;
 use rdkafka::consumer::{CommitMode, Consumer, StreamConsumer};
-use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::message::Message as KafkaMessage;
+use rdkafka::producer::{FutureProducer, FutureRecord};
 use std::time::Duration;
 use tracing::{error, info};
 use uuid::Uuid;
@@ -22,8 +22,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
     info!("Starting Lifecycle Simulation Engine...");
 
-    let kafka_bootstrap = std::env::var("KAFKA_BOOTSTRAP")
-        .unwrap_or_else(|_| "localhost:19092".to_string());
+    let kafka_bootstrap =
+        std::env::var("KAFKA_BOOTSTRAP").unwrap_or_else(|_| "localhost:19092".to_string());
 
     // Consumer (AssignmentCreated)
     let consumer: StreamConsumer = ClientConfig::new()
@@ -46,13 +46,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(m) => {
                 if let Some(payload) = m.payload() {
                     if let Ok(envelope) = proto::EventEnvelope::decode(payload) {
-                        if let Some(proto::event_envelope::Payload::AssignmentCreated(event)) = envelope.payload {
+                        if let Some(proto::event_envelope::Payload::AssignmentCreated(event)) =
+                            envelope.payload
+                        {
                             // SIMULATE LIFECYCLE
                             // 80% change to recover, 20% to escalate
                             // Delay slightly to simulate time passing (in real app, this would be days)
                             // For demo, we do it immediately or with slight random delay?
                             // Let's just emit immediately for instant graph gratification.
-                            
+
                             simulate_resolution(&event, &producer).await;
                         }
                     }
@@ -69,7 +71,10 @@ async fn simulate_resolution(assignment: &proto::AssignmentCreated, producer: &F
 
     let (payload, event_type) = if outcome < 0.8 {
         // RECOVER
-        info!("Account {} recovered by {}", assignment.account_id, assignment.dca_id);
+        info!(
+            "Account {} recovered by {}",
+            assignment.account_id, assignment.dca_id
+        );
         (
             proto::event_envelope::Payload::AccountRecovered(proto::AccountRecovered {
                 account_id: assignment.account_id.clone(),
@@ -79,7 +84,10 @@ async fn simulate_resolution(assignment: &proto::AssignmentCreated, producer: &F
         )
     } else {
         // ESCALATE
-        info!("Account {} escalated by {}", assignment.account_id, assignment.dca_id);
+        info!(
+            "Account {} escalated by {}",
+            assignment.account_id, assignment.dca_id
+        );
         (
             proto::event_envelope::Payload::AccountEscalated(proto::AccountEscalated {
                 account_id: assignment.account_id.clone(),

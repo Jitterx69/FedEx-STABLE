@@ -13,8 +13,8 @@ pub mod stable_proto {
         }
     }
 }
-use stable_proto::events::v1 as proto;
-use prost::Message as ProstMessage; // Trait for decoding
+use prost::Message as ProstMessage;
+use stable_proto::events::v1 as proto; // Trait for decoding
 
 struct ProjectionState {
     db_pool: sqlx::PgPool,
@@ -59,7 +59,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if let Some(payload) = m.payload() {
                     // Decide protobuf
                     if let Ok(envelope) = proto::EventEnvelope::decode(payload) {
-                       process_event(envelope, &state).await;
+                        process_event(envelope, &state).await;
                     } else {
                         error!("Failed to decode Protobuf message");
                     }
@@ -71,7 +71,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn process_event(envelope: proto::EventEnvelope, state: &Arc<ProjectionState>) {
-    info!("Processing Event: {} type={}", envelope.event_id, envelope.event_type);
+    info!(
+        "Processing Event: {} type={}",
+        envelope.event_id, envelope.event_type
+    );
 
     if let Some(payload) = envelope.payload {
         match payload {
@@ -101,12 +104,11 @@ async fn process_event(envelope: proto::EventEnvelope, state: &Arc<ProjectionSta
                 // Update Account Status & Insert Assignment
                 let mut tx = state.db_pool.begin().await.unwrap();
 
-                let q1 = sqlx::query(
-                    "UPDATE accounts SET status = 'assigned' WHERE account_id = $1",
-                )
-                .bind(&event.account_id)
-                .execute(&mut *tx)
-                .await;
+                let q1 =
+                    sqlx::query("UPDATE accounts SET status = 'assigned' WHERE account_id = $1")
+                        .bind(&event.account_id)
+                        .execute(&mut *tx)
+                        .await;
 
                 let q2 = sqlx::query(
                     r#"
