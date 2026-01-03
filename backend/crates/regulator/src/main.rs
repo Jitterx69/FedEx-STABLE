@@ -119,7 +119,7 @@ async fn process_estimate(
     let regulated_score = (estimate.raw_recovery_probability * sharpness) + noise;
 
     // Clamp to 0-1
-    let final_score = regulated_score.max(0.0).min(1.0);
+    let final_score = regulated_score.clamp(0.0, 1.0);
 
     // Quantize into Bands (The "View" DCAs see)
     let priority_band = if final_score > 0.7 {

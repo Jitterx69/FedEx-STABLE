@@ -62,7 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Mock DCA Performance for Weighted Random
     let dca_ids = ["DCA_ALPHA", "DCA_BETA", "DCA_GAMMA"];
     let weights = [80, 50, 20]; // Alpha is best, Gamma is worst
-    let dist = rand::distributions::WeightedIndex::new(&weights).unwrap();
+    let dist = rand::distributions::WeightedIndex::new(weights).unwrap();
     let mut rng = rand::thread_rng();
 
     // 4. Assignment Loop
