@@ -59,8 +59,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let estimation_url = std::env::var("ESTIMATION_URL")
         .unwrap_or_else(|_| "http://localhost:5001/predict".to_string());
 
-
-
     // 4. Assignment Loop
     loop {
         // A. Poll for unassigned accounts
