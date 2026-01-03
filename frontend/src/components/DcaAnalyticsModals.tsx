@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { X, Activity, TrendingUp, DollarSign, Users, AlertTriangle, Zap } from 'lucide-react';
+import { X, DollarSign, Users, AlertTriangle, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import DCABehaviorHeatmap from './console/charts/DCABehaviorHeatmap';

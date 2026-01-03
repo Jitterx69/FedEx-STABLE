@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import PortfolioFlowChart from "./charts/PortfolioFlowChart";
 import DCABehaviorHeatmap from "./charts/DCABehaviorHeatmap";
 import { RecoveryPerformanceChart } from "./charts/RecoveryPerformanceChart";

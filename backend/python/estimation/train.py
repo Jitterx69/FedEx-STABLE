@@ -8,6 +8,7 @@ import os
 from sklearn.preprocessing import StandardScaler
 from model import RecoveryNet
 
+def train(data_path='synthetic_data.csv'):
     if os.path.exists(data_path):
         print(f"Loading existing data from {data_path}...")
         df = pd.read_csv(data_path)
