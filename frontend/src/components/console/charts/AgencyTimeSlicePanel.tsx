@@ -1,16 +1,15 @@
-import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
+
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { X, Clock } from 'lucide-react';
 
 interface AgencyTimeSlicePanelProps {
     isOpen: boolean;
     onClose: () => void;
     timeIndex: number | null;
-    agencyData: Record<string, any[]>;
-    isStableMode: boolean;
+    agencyData: Record<string, { active: number; recovered: number; escalated: number }[]>;
 }
 
-const AgencyTimeSlicePanel = ({ isOpen, onClose, timeIndex, agencyData, isStableMode }: AgencyTimeSlicePanelProps) => {
+const AgencyTimeSlicePanel = ({ isOpen, onClose, timeIndex, agencyData }: AgencyTimeSlicePanelProps) => {
     if (!isOpen || timeIndex === null) return null;
 
     // Transform data for the specific time slice
@@ -54,7 +53,7 @@ const AgencyTimeSlicePanel = ({ isOpen, onClose, timeIndex, agencyData, isStable
                 ? (point.recovered / (point.recovered + point.escalated) * 100)
                 : 0
         };
-    }).filter(Boolean);
+    }).filter((item): item is NonNullable<typeof item> => item !== null);
 
     return (
         <div className="absolute bottom-4 left-4 right-4 h-64 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-40 flex flex-col animate-in slide-in-from-bottom-5 fade-in">
@@ -93,7 +92,7 @@ const AgencyTimeSlicePanel = ({ isOpen, onClose, timeIndex, agencyData, isStable
 
                 {/* Quick Stats Side Panel */}
                 <div className="w-48 border-l border-slate-800 pl-4 flex flex-col justify-center space-y-4">
-                    {chartData.map((d: any) => (
+                    {chartData.map((d) => (
                         <div key={d.name} className="flex flex-col gap-1">
                             <div className="flex justify-between items-center text-[10px] text-slate-400">
                                 <span>{d.name}</span>

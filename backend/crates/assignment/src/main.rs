@@ -22,12 +22,26 @@ const MAX_CAPACITY_PER_DCA: i64 = 50; // Simple constraint
 #[derive(sqlx::FromRow)]
 struct UnassignedAccount {
     account_id: String,
+    outstanding_balance: f64,
+    days_past_due: i32,
+}
+
+#[derive(serde::Serialize)]
+struct PredictionRequest {
+    balance: f64,
+    days_past_due: i32,
+}
+
+#[derive(serde::Deserialize)]
+struct PredictionResponse {
+    recovery_probability: Option<f64>,
+    error: Option<String>,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
-    info!("Starting Assignment Engine (Round-Robin)...");
+    info!("Starting Assignment Engine (Round-Robin with AI Insight)...");
 
     // 1. Database Connection (to read Ingested accounts)
     let database_url = std::env::var("POSTGRES_URL").expect("POSTGRES_URL must be set");
@@ -43,13 +57,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .set("message.timeout.ms", "5000")
         .create()?;
 
-    // 3. Assignment Loop
-    let mut dca_index = 0;
+    // 3. HTTP Client for AI
+    let http_client = reqwest::Client::new();
+    let estimation_url = std::env::var("ESTIMATION_URL").unwrap_or_else(|_| "http://localhost:5001/predict".to_string());
+
+    // Mock DCA Performance for Weighted Random
+    let dca_ids = ["DCA_ALPHA", "DCA_BETA", "DCA_GAMMA"];
+    let weights = [80, 50, 20]; // Alpha is best, Gamma is worst
+    let dist = rand::distributions::WeightedIndex::new(&weights).unwrap();
+    let mut rng = rand::thread_rng();
+
+    // 4. Assignment Loop
     loop {
         // A. Poll for unassigned accounts
-        // A. Poll for unassigned accounts
         let unassigned_accounts = sqlx::query_as::<_, UnassignedAccount>(
-            "SELECT account_id FROM accounts WHERE status = 'ingested' LIMIT 10"
+            "SELECT account_id, outstanding_balance, days_past_due FROM accounts WHERE status = 'ingested' LIMIT 10"
         )
         .fetch_all(&pool)
         .await?;
@@ -60,15 +82,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         for account in unassigned_accounts {
-            // B. Check Capacity (Simulation)
-            // In a real system, we'd query the 'assignments' table to count active loads.
-            // For Phase 2, we assume infinite capacity for simplicity or mocked check.
-            
-            // C. Round-Robin Selection
-            let selected_dca = DCA_POOL[dca_index];
-            dca_index = (dca_index + 1) % DCA_POOL.len();
+            // B. Get AI Prediction
+            let payload = PredictionRequest {
+                balance: account.outstanding_balance,
+                days_past_due: account.days_past_due,
+            };
 
-            info!("Assigning account {} to {}", account.account_id, selected_dca);
+            let probability = match http_client.post(&estimation_url).json(&payload).send().await {
+                Ok(resp) => {
+                    match resp.json::<PredictionResponse>().await {
+                        Ok(data) => data.recovery_probability.unwrap_or(0.0),
+                        Err(e) => {
+                            error!("Failed to parse prediction response: {}", e);
+                            0.0
+                        }
+                    }
+                },
+                Err(e) => {
+                    error!("Failed to call estimation service: {}", e);
+                    0.0
+                }
+            };
+
+            info!("Account {} | Balance: ${:.2} | DPD: {} | AI Probability: {:.1}%", 
+                account.account_id, account.outstanding_balance, account.days_past_due, probability * 100.0);
+
+            // C. Weighted Random Selection
+            use rand::distributions::Distribution;
+            let selected_dca = dca_ids[dist.sample(&mut rng)];
+
+            info!("-> Assigning to {}", selected_dca);
 
             // D. Create Event
             let assignment_event = proto::AssignmentCreated {
@@ -96,12 +139,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             if let Err((e, _)) = producer.send(record, Duration::from_secs(5)).await {
                 error!("Failed to publish assignment: {:?}", e);
-            } else {
-                // Optimistically update local state to avoid re-assigning immediately? 
-                // No, relied on Projection to update DB 'status' -> 'assigned'.
-                // Ideally this loop should assume 'eventual consistency' and ignore this ID for a bit,
-                // or we use 'SELECT ... FOR UPDATE SKIP LOCKED' pattern.
-                // For Phase 2 Demo, we'll just wait for Projection to catch up or rely on LIMIT.
             }
         }
         

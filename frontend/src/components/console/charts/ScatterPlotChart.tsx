@@ -212,7 +212,15 @@ const ScatterPlotChart = ({
   );
 };
 
-const CustomTooltip = ({ active, payload, xMetric, yMetric }: any) => {
+interface CustomTooltipProps {
+  active?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any[];
+  xMetric: string;
+  yMetric: string;
+}
+
+const CustomTooltip = ({ active, payload, xMetric, yMetric }: CustomTooltipProps) => {
   if (!active || !payload || payload.length === 0) return null;
   const d = payload[0].payload;
 

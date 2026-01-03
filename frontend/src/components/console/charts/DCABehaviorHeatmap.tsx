@@ -5,9 +5,9 @@ interface ChartDataPoint {
   active: number;
   recovered: number;
   escalated: number;
-  cumulativeActive: number;
-  cumulativeRecovered: number;
-  cumulativeEscalated: number;
+  cumulativeActive?: number;
+  cumulativeRecovered?: number;
+  cumulativeEscalated?: number;
 }
 
 interface Props {
@@ -64,6 +64,47 @@ const calculateAvgEfficiency = (data: (ChartDataPoint | null)[]): number => {
 };
 
 const DCABehaviorHeatmap = ({ isStableMode, history = [], agencyData, isFullscreen = false, showSparklines, onColumnSelect }: Props) => {
+  // Move Hook to top level (before conditional return)
+  // FALLBACK: Original Global Heatmap Logic
+  const heatmapData = useMemo(() => {
+    const cells: { heat: number; activity: 'active' | 'recovered' | 'escalated' | 'none' }[] = [];
+    const cellCount = 50;
+
+    if (history.length === 0) {
+      return Array.from({ length: cellCount }).map(() => ({ heat: 0, activity: 'none' as const }));
+    }
+
+    // Take the most recent data points (up to cellCount)
+    const recentHistory = history.slice(-cellCount);
+
+    // Find max values for normalization
+    const maxActive = Math.max(...recentHistory.map(h => Math.abs(h.active)), 1);
+    const maxRecovered = Math.max(...recentHistory.map(h => h.recovered), 1);
+    const maxEscalated = Math.max(...recentHistory.map(h => h.escalated), 1);
+
+    // Create cells from history data
+    for (let i = 0; i < cellCount; i++) {
+      if (i < recentHistory.length) {
+        const point = recentHistory[i];
+        // Determine primary activity for this time point
+        if (point.escalated > point.recovered && point.escalated > 0) {
+          cells.push({ heat: point.escalated / maxEscalated, activity: 'escalated' });
+        } else if (point.recovered > 0) {
+          cells.push({ heat: point.recovered / maxRecovered, activity: 'recovered' });
+        } else if (point.active > 0) {
+          cells.push({ heat: point.active / maxActive, activity: 'active' });
+        } else {
+          cells.push({ heat: 0.1, activity: 'none' });
+        }
+      } else {
+        // Fill remaining cells with baseline activity
+        cells.push({ heat: 0, activity: 'none' });
+      }
+    }
+
+    return cells;
+  }, [history]);
+
   // If agency data provided, render MATRIX view
   if (agencyData && Object.keys(agencyData).length > 0) {
     const agencies = Object.keys(agencyData);
@@ -178,45 +219,7 @@ const DCABehaviorHeatmap = ({ isStableMode, history = [], agencyData, isFullscre
     );
   }
 
-  // FALLBACK: Original Global Heatmap Logic
-  const heatmapData = useMemo(() => {
-    const cells: { heat: number; activity: 'active' | 'recovered' | 'escalated' | 'none' }[] = [];
-    const cellCount = 50;
 
-    if (history.length === 0) {
-      return Array.from({ length: cellCount }).map(() => ({ heat: 0, activity: 'none' as const }));
-    }
-
-    // Take the most recent data points (up to cellCount)
-    const recentHistory = history.slice(-cellCount);
-
-    // Find max values for normalization
-    const maxActive = Math.max(...recentHistory.map(h => Math.abs(h.active)), 1);
-    const maxRecovered = Math.max(...recentHistory.map(h => h.recovered), 1);
-    const maxEscalated = Math.max(...recentHistory.map(h => h.escalated), 1);
-
-    // Create cells from history data
-    for (let i = 0; i < cellCount; i++) {
-      if (i < recentHistory.length) {
-        const point = recentHistory[i];
-        // Determine primary activity for this time point
-        if (point.escalated > point.recovered && point.escalated > 0) {
-          cells.push({ heat: point.escalated / maxEscalated, activity: 'escalated' });
-        } else if (point.recovered > 0) {
-          cells.push({ heat: point.recovered / maxRecovered, activity: 'recovered' });
-        } else if (point.active > 0) {
-          cells.push({ heat: point.active / maxActive, activity: 'active' });
-        } else {
-          cells.push({ heat: 0.1, activity: 'none' });
-        }
-      } else {
-        // Fill remaining cells with baseline activity
-        cells.push({ heat: 0, activity: 'none' });
-      }
-    }
-
-    return cells;
-  }, [history]);
 
   const getColor = (cell: { heat: number; activity: string }) => {
     if (cell.activity === 'none' || cell.heat === 0) return 'bg-slate-800/50';

@@ -46,6 +46,7 @@ async fn main() {
     // Build Router
     let app = Router::new()
         .route("/ingest/account", post(ingest_account))
+        .route("/resolve/account", post(resolve_account))
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 
@@ -77,28 +78,64 @@ async fn ingest_account(
         days_past_due: payload.days_past_due,
     };
 
-    // 2. Wrap in Envelope
+    publish_event(
+        "AccountIngested", 
+        proto::event_envelope::Payload::AccountIngested(account_event), 
+        &state.kafka_producer
+    ).await
+}
+
+// Handler: Resolve Account
+#[derive(Deserialize)]
+struct ResolveAccountRequest {
+    account_id: String,
+    amount: f64,
+}
+
+async fn resolve_account(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<ResolveAccountRequest>,
+) -> StatusCode {
+    tracing::info!("Received account resolution: {}", payload.account_id);
+
+    // 1. Create Payload
+    let resolution_event = proto::AccountRecovered {
+        account_id: payload.account_id,
+        recovered_amount: payload.amount,
+    };
+
+    publish_event(
+        "AccountRecovered",
+        proto::event_envelope::Payload::AccountRecovered(resolution_event),
+        &state.kafka_producer
+    ).await
+}
+
+// Helper to publish events
+async fn publish_event(
+    event_type: &str,
+    payload: proto::event_envelope::Payload,
+    producer: &FutureProducer,
+) -> StatusCode {
     let envelope = proto::EventEnvelope {
         event_id: Uuid::new_v4().to_string(),
-        event_type: "AccountIngested".to_string(),
+        event_type: event_type.to_string(),
         source: "ingress-svc".to_string(),
         schema_version: "1.0.0".to_string(),
         occurrence_time: Some(prost_types::Timestamp::from(std::time::SystemTime::now())),
         ingestion_time: Some(prost_types::Timestamp::from(std::time::SystemTime::now())),
-        payload: Some(proto::event_envelope::Payload::AccountIngested(account_event)),
+        payload: Some(payload),
     };
 
-    // 3. Serialize to Bytes
     use prost::Message;
     let mut buf = Vec::new();
     envelope.encode(&mut buf).unwrap();
 
-    // 4. Publish to Kafka
     let record = FutureRecord::to("stable-events")
         .payload(&buf)
         .key(&envelope.event_id);
 
-    match state.kafka_producer.send(record, Duration::from_secs(5)).await {
+    match producer.send(record, Duration::from_secs(5)).await {
         Ok(_) => StatusCode::CREATED,
         Err((e, _)) => {
             tracing::error!("Kafka pub error: {:?}", e);

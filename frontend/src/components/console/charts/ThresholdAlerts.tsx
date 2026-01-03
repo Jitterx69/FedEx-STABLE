@@ -2,20 +2,12 @@ import { useState } from 'react';
 import { Plus, Trash2, X, AlertTriangle, Bell, BellOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export interface ThresholdAlert {
-  id: string;
-  metric: 'active' | 'recovered' | 'escalated';
-  operator: '>' | '<' | '>=' | '<=' | '==';
-  value: number;
-  enabled: boolean;
-  color?: string;
-  label: string;
-}
+import { ThresholdAlert } from '@/stores/annotationTypes';
 
 interface Props {
   alerts: ThresholdAlert[];
   onAdd: (alert: Omit<ThresholdAlert, 'id'>) => void;
-  onUpdate: (id: string, updates: Partial<ThresholdAlert>) => void;
+  // onUpdate: (id: string, updates: Partial<ThresholdAlert>) => void; // Unused
   onDelete: (id: string) => void;
   onToggle: (id: string) => void;
   isOpen: boolean;
@@ -39,7 +31,6 @@ const OPERATOR_OPTIONS = [
 const ThresholdAlerts = ({
   alerts,
   onAdd,
-  onUpdate,
   onDelete,
   onToggle,
   isOpen,
@@ -103,13 +94,12 @@ const ThresholdAlerts = ({
               </div>
             ) : (
               alerts.map(alert => (
-                <div 
+                <div
                   key={alert.id}
-                  className={`p-3 rounded-lg border transition-all ${
-                    alert.enabled 
-                      ? 'bg-slate-800/70 border-slate-600' 
-                      : 'bg-slate-800/30 border-slate-700 opacity-60'
-                  }`}
+                  className={`p-3 rounded-lg border transition-all ${alert.enabled
+                    ? 'bg-slate-800/70 border-slate-600'
+                    : 'bg-slate-800/30 border-slate-700 opacity-60'
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -131,9 +121,9 @@ const ThresholdAlerts = ({
                       <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
-                  
+
                   <div className="mt-2 flex items-center gap-2 text-xs">
-                    <span 
+                    <span
                       className="px-2 py-0.5 rounded text-white"
                       style={{ backgroundColor: getMetricColor(alert.metric) }}
                     >
@@ -151,7 +141,7 @@ const ThresholdAlerts = ({
 
           {/* Add New Alert */}
           {!isAdding ? (
-            <Button 
+            <Button
               onClick={() => setIsAdding(true)}
               className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
               size="sm"
@@ -171,14 +161,14 @@ const ThresholdAlerts = ({
                   placeholder="Enter alert name..."
                 />
               </div>
-              
+
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="text-[10px] text-slate-400 block mb-1">Metric</label>
                   <select
                     value={newAlert.metric}
-                    onChange={(e) => setNewAlert({ 
-                      ...newAlert, 
+                    onChange={(e) => setNewAlert({
+                      ...newAlert,
                       metric: e.target.value as typeof newAlert.metric,
                       color: getMetricColor(e.target.value)
                     })}
@@ -211,9 +201,9 @@ const ThresholdAlerts = ({
                   />
                 </div>
               </div>
-              
+
               <div className="flex gap-2">
-                <Button 
+                <Button
                   onClick={handleAdd}
                   className="flex-1 gap-1 bg-emerald-600 hover:bg-emerald-700"
                   size="sm"
@@ -221,7 +211,7 @@ const ThresholdAlerts = ({
                 >
                   Add Alert
                 </Button>
-                <Button 
+                <Button
                   onClick={() => setIsAdding(false)}
                   variant="outline"
                   className="flex-1"

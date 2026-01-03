@@ -8,59 +8,15 @@ import os
 from sklearn.preprocessing import StandardScaler
 from model import RecoveryNet
 
-def generate_synthetic_data(n_samples=10000):
-    print(f"Generating {n_samples} synthetic samples...")
-    X = []
-    y = []
-
-    for _ in range(n_samples):
-        # Feature 1: Balance (0 to 20000)
-        balance = np.random.exponential(scale=3000) 
-        
-        # Feature 2: Days Past Due (0 to 180)
-        dpd = np.random.randint(0, 180)
-
-        # Logic for Label (Simulating the heuristic)
-        # Higher balance -> Lower probability
-        # Higher DPD -> Lower probability
-        prob = 0.95 
-        prob -= (balance / 10000) * 0.3
-        prob -= (dpd / 90) * 0.4
-        
-        # Add noise
-        prob += np.random.normal(0, 0.1)
-        
-        # Clamp
-        prob = max(0.0, min(1.0, prob))
-
-        X.append([balance, dpd])
-        y.append([prob])
-
-    # Export to CSV for inspection
-    df = pd.DataFrame(X, columns=['balance', 'days_past_due'])
-    df['recovery_probability'] = y
-    df.to_csv('synthetic_data.csv', index=False)
-    print("Saved synthetic_data.csv for inspection.")
-
-    return np.array(X, dtype=np.float32), np.array(y, dtype=np.float32)
-
-def train():
-    # 1. Data
-    data_path = 'synthetic_data.csv'
-    if not os.path.exists(data_path):
-        # Try looking in specific path
-        alt_path = os.path.join(os.path.dirname(__file__), 'synthetic_data.csv')
-        if os.path.exists(alt_path):
-            data_path = alt_path
-
     if os.path.exists(data_path):
         print(f"Loading existing data from {data_path}...")
         df = pd.read_csv(data_path)
         X_raw = df[['balance', 'days_past_due']].values.astype(np.float32)
         y = df['recovery_probability'].values.astype(np.float32).reshape(-1, 1)
     else:
-        print("Data not found, generating new...")
-        X_raw, y = generate_synthetic_data()
+        print(f"❌ Error: Data file not found at {data_path}")
+        print("Please run 'backend/python/estimation/generate_data.py' first.")
+        return
     
     # Scale Features
     scaler = StandardScaler()

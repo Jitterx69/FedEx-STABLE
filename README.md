@@ -1,73 +1,79 @@
-# Welcome to your Lovable project
+# STABLE - Strategic Transaction & Account Balance Lifecycle Engine
 
-## Project info
+## Overview
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+STABLE is an enterprise-grade governance platform for DCA (Debt Collection Agency) ecosystem management. It provides real-time monitoring, AI-powered analytics, and advanced workflow automation for managing account recovery operations.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **Real-time Console Dashboard** - Monitor portfolio performance, recovery variance, and DCA activity
+- **DCA Partner Portal** - Secure workspace for collection agencies to manage assigned accounts
+- **AI-Powered Predictions** - Machine learning models for recovery probability estimation
+- **Event-Driven Architecture** - Scalable backend with Kafka-based event streaming
 
-**Use Lovable**
+## Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### Frontend
+- React 18 with TypeScript
+- Vite for build tooling
+- Tailwind CSS for styling
+- shadcn/ui component library
+- Recharts for data visualization
 
-Changes made via Lovable will be committed automatically to this repo.
+### Backend
+- Rust microservices (Ingress, Gateway, Assignment, Projection, Lifecycle)
+- PostgreSQL for persistent storage
+- Apache Kafka (Redpanda) for event streaming
+- Python for ML model serving
 
-**Use your preferred IDE**
+## Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
+- Node.js 18+ and npm
+- Docker and Docker Compose (for backend services)
+- Rust toolchain (for backend development)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Frontend Development
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Navigate to frontend directory
+cd frontend
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Backend Services
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```sh
+# Start all backend services
+docker-compose up -d
 
-**Use GitHub Codespaces**
+# View logs
+docker-compose logs -f
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Project Structure
 
-## What technologies are used for this project?
+```
+├── frontend/           # React frontend application
+│   ├── src/
+│   │   ├── components/ # React components
+│   │   ├── api.ts      # API client
+│   │   └── ...
+├── backend/            # Rust microservices
+│   └── crates/
+│       ├── gateway/    # API gateway service
+│       ├── ingress/    # Event ingestion service
+│       ├── assignment/ # Account assignment logic
+│       └── ...
+├── ai/                 # Python ML components
+└── schemas/            # Protobuf definitions
+```
 
-This project is built with:
+## License
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Proprietary - All rights reserved.

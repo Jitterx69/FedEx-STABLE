@@ -109,6 +109,7 @@ services:
     environment:
       - KAFKA_BOOTSTRAP=redpanda:9092
       - POSTGRES_URL=postgres://stable_user:stable_password@postgres:5432/stable_core
+      - ESTIMATION_URL=http://stable-backend-estimation:5001/predict
       - RUST_LOG=info
     depends_on:
       redpanda:

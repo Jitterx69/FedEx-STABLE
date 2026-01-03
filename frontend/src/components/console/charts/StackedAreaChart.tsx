@@ -146,15 +146,25 @@ const StackedAreaChart = ({ data, stacked100 = false }: Props) => {
   );
 };
 
-const CustomTooltip = ({ active, payload, label, stacked100 }: any) => {
+interface CustomTooltipProps {
+  active?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any[];
+  label?: string;
+  stacked100?: boolean;
+}
+
+const CustomTooltip = ({ active, payload, label, stacked100 }: CustomTooltipProps) => {
   if (!active || !payload || payload.length === 0) return null;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const total = payload.reduce((sum: number, p: any) => sum + (p.value || 0), 0);
 
   return (
     <div className="bg-slate-900/95 border border-slate-700 rounded-lg p-3 text-xs shadow-xl">
       <div className="font-medium text-slate-200 mb-2">Time: {label}</div>
       <div className="space-y-1">
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {payload.map((p: any, idx: number) => (
           <div key={idx} className="flex justify-between gap-4">
             <span className="flex items-center gap-1">

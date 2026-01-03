@@ -9,12 +9,20 @@ interface FullscreenHeatmapModalProps {
   isOpen: boolean;
   onClose: () => void;
   isStableMode: boolean;
-  history: any[];
-  agencyData: Record<string, any[]>; // Map of Agency Name -> History Array
+  history: { time: number; active: number; recovered: number; escalated: number }[];
+  agencyData: Record<string, { active: number; recovered: number; escalated: number; time: number }[]>; // Map of Agency Name -> History Array
 }
 
 // Reusable Dropdown (Local)
-const ToolDropdown = ({ label, icon: Icon, children, isOpen, onToggle }: any) => (
+interface ToolDropdownProps {
+  label: string;
+  icon: React.ElementType;
+  children: React.ReactNode;
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+const ToolDropdown = ({ label, icon: Icon, children, isOpen, onToggle }: ToolDropdownProps) => (
   <div className="relative">
     <Button
       size="sm"
@@ -54,23 +62,26 @@ const FullscreenHeatmapModal = ({
   // Update selected agencies when agencyData changes (new agencies added)
   useEffect(() => {
     const allAgencies = Object.keys(agencyData);
-    setSelectedAgencies(prev => {
-      const updated = new Set(prev);
-      allAgencies.forEach(agency => {
-        if (!prev.has(agency) && prev.size === allAgencies.length - 1) {
-          // If a new agency appears and all others were selected, include it
-          updated.add(agency);
-        }
+    // Defer state update to next tick
+    setTimeout(() => {
+      setSelectedAgencies(prev => {
+        const updated = new Set(prev);
+        allAgencies.forEach(agency => {
+          if (!prev.has(agency) && prev.size === allAgencies.length - 1) {
+            // If a new agency appears and all others were selected, include it
+            updated.add(agency);
+          }
+        });
+        // Ensure we only have agencies that exist
+        const filtered = new Set([...updated].filter(a => allAgencies.includes(a)));
+        return filtered.size > 0 ? filtered : new Set(allAgencies);
       });
-      // Ensure we only have agencies that exist
-      const filtered = new Set([...updated].filter(a => allAgencies.includes(a)));
-      return filtered.size > 0 ? filtered : new Set(allAgencies);
-    });
+    }, 0);
   }, [agencyData]);
 
   // Filtered agency data
   const filteredAgencyData = useMemo(() => {
-    const filtered: Record<string, any[]> = {};
+    const filtered: Record<string, { active: number; recovered: number; escalated: number; time: number }[]> = {};
     Object.entries(agencyData).forEach(([name, data]) => {
       if (selectedAgencies.has(name)) {
         filtered[name] = data;
@@ -107,7 +118,7 @@ const FullscreenHeatmapModal = ({
     const rows: string[][] = [];
 
     Object.entries(filteredAgencyData).forEach(([agency, data]) => {
-      data.forEach((point: any) => {
+      data.forEach((point) => {
         const total = point.recovered + point.escalated;
         const efficiency = total > 0 ? ((point.recovered / total) * 100).toFixed(1) : '0.0';
         rows.push([
@@ -289,8 +300,8 @@ const FullscreenHeatmapModal = ({
             <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Top Performers</h3>
             {Object.entries(filteredAgencyData).map(([name, data]) => {
               // Calculate simple aggregate score
-              const recovered = data.reduce((acc: number, curr: any) => acc + curr.recovered, 0);
-              const escalated = data.reduce((acc: number, curr: any) => acc + curr.escalated, 0);
+              const recovered = data.reduce((acc, curr) => acc + curr.recovered, 0);
+              const escalated = data.reduce((acc, curr) => acc + curr.escalated, 0);
               const score = recovered - escalated;
               return (
                 <div key={name} className="flex items-center justify-between bg-slate-800 p-2 rounded border border-slate-700">
@@ -353,7 +364,6 @@ const FullscreenHeatmapModal = ({
             onClose={() => setSelectedTimeIndex(null)}
             timeIndex={selectedTimeIndex}
             agencyData={filteredAgencyData}
-            isStableMode={isStableMode}
           />
         </div>
 
@@ -382,8 +392,8 @@ const FullscreenHeatmapModal = ({
                 {allAgencies.map(agency => {
                   const isSelected = selectedAgencies.has(agency);
                   const data = agencyData[agency] || [];
-                  const recovered = data.reduce((acc: number, curr: any) => acc + curr.recovered, 0);
-                  const escalated = data.reduce((acc: number, curr: any) => acc + curr.escalated, 0);
+                  const recovered = data.reduce((acc, curr) => acc + curr.recovered, 0);
+                  const escalated = data.reduce((acc, curr) => acc + curr.escalated, 0);
                   const score = recovered - escalated;
 
                   return (
@@ -391,8 +401,8 @@ const FullscreenHeatmapModal = ({
                       key={agency}
                       onClick={() => toggleAgency(agency)}
                       className={`w-full flex items-center justify-between p-3 rounded-lg mb-1 transition-all ${isSelected
-                          ? 'bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20'
-                          : 'bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/50 opacity-60'
+                        ? 'bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20'
+                        : 'bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/50 opacity-60'
                         }`}
                     >
                       <div className="flex items-center gap-3">

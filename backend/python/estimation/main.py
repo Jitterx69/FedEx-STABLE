@@ -115,5 +115,49 @@ def process_account(account_event, producer):
     producer.flush()
     print(f"Published ML Estimate: val={raw_prob:.4f}")
 
+from flask import Flask, request, jsonify
+import threading
+
+# ... existing code ...
+
+app = Flask(__name__)
+
+@app.route('/predict', methods=['POST'])
+def predict_generated():
+    """
+    Endpoint for assignment service to get probability on-demand.
+    Expects JSON: {"balance": float, "days_past_due": int}
+    """
+    try:
+        data = request.json
+        balance = data.get('balance', 0.0)
+        dpd = data.get('days_past_due', 0)
+        
+        # 1. Prepare Features
+        features = np.array([[balance, dpd]], dtype=np.float32)
+        
+        # 2. Scale
+        features_scaled = scaler.transform(features)
+        
+        # 3. Predict
+        with torch.no_grad():
+            inputs = torch.from_numpy(features_scaled)
+            output = model(inputs)
+            prob = output.item()
+            
+        return jsonify({"recovery_probability": prob})
+    except Exception as e:
+        print(f"Prediction Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+def run_flask_server():
+    print("Starting Flask API on port 5001...")
+    # Disable reloader/debugger for production-like run
+    app.run(host='0.0.0.0', port=5001, debug=False, use_reloader=False)
+
 if __name__ == "__main__":
+    # Start API in background thread
+    threading.Thread(target=run_flask_server, daemon=True).start()
+    
+    # Run core Kafka loop
     run_estimation_engine()

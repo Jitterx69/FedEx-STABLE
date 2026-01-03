@@ -51,3 +51,23 @@ export const fetchSystemStats = async (): Promise<SystemStats> => {
     const response = await api.get('/stats');
     return response.data;
 };
+// DCA Portal APIs
+export interface DcaAssignment {
+    assignment_id: string;
+    account_id: string;
+    balance: number;
+    dpd: number;
+    status: string;
+}
+
+export const fetchDcaAssignments = async (dcaId: string): Promise<DcaAssignment[]> => {
+    const response = await api.get(`/dca/${dcaId}/assignments`);
+    return response.data;
+};
+
+export const resolveAccount = async (accountId: string, amount: number) => {
+    return api.post('/resolve/account', {
+        account_id: accountId,
+        amount: amount
+    });
+};

@@ -2,15 +2,7 @@ import { useState } from 'react';
 import { Trash2, Plus, Edit2, Check, X, AlertTriangle, Flag, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export interface Annotation {
-  id: string;
-  timePoint: number;
-  label: string;
-  description?: string;
-  type: 'note' | 'event' | 'alert';
-  color?: string;
-  createdAt: number;
-}
+import { Annotation } from '@/stores/annotationTypes';
 
 interface Props {
   annotations: Annotation[];
@@ -28,10 +20,10 @@ const ANNOTATION_TYPES = [
   { value: 'alert', label: 'Alert', icon: AlertTriangle, color: '#ef4444' },
 ] as const;
 
-const AnnotationPanel = ({ 
-  annotations, 
-  onAdd, 
-  onUpdate, 
+const AnnotationPanel = ({
+  annotations,
+  onAdd,
+  onUpdate,
   onDelete,
   currentTime = 0,
   isOpen,
@@ -82,7 +74,7 @@ const AnnotationPanel = ({
       {/* Add button */}
       <div className="p-3 border-b border-slate-800">
         {!isAdding ? (
-          <Button 
+          <Button
             onClick={() => setIsAdding(true)}
             className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
             size="sm"
@@ -136,7 +128,7 @@ const AnnotationPanel = ({
               />
             </div>
             <div className="flex gap-2">
-              <Button 
+              <Button
                 onClick={handleAdd}
                 className="flex-1 gap-1 bg-emerald-600 hover:bg-emerald-700"
                 size="sm"
@@ -145,7 +137,7 @@ const AnnotationPanel = ({
                 <Check className="w-3 h-3" />
                 Save
               </Button>
-              <Button 
+              <Button
                 onClick={() => {
                   setIsAdding(false);
                   setNewAnnotation({ timePoint: currentTime, label: '', description: '', type: 'note' });
@@ -178,14 +170,14 @@ const AnnotationPanel = ({
                 const Icon = getTypeIcon(annotation.type);
                 const color = getTypeColor(annotation.type);
                 const isEditing = editingId === annotation.id;
-                
+
                 return (
-                  <div 
+                  <div
                     key={annotation.id}
                     className="p-3 rounded-lg bg-slate-800/50 border border-slate-700 hover:border-slate-600 transition-colors group"
                   >
                     <div className="flex items-start gap-2">
-                      <div 
+                      <div
                         className="p-1.5 rounded"
                         style={{ backgroundColor: `${color}20` }}
                       >
@@ -229,7 +221,7 @@ const AnnotationPanel = ({
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Actions */}
                     <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button
@@ -264,7 +256,7 @@ const AnnotationPanel = ({
       <div className="p-3 border-t border-slate-800 text-[10px] text-slate-500 flex items-center justify-between">
         <span>{annotations.length} annotation{annotations.length !== 1 ? 's' : ''}</span>
         {annotations.length > 0 && (
-          <button 
+          <button
             onClick={() => {
               if (window.confirm('Delete all annotations?')) {
                 annotations.forEach(a => onDelete(a.id));

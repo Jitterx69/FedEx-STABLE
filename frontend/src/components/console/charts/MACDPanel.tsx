@@ -1,5 +1,5 @@
 import React from 'react';
-import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ReferenceLine, Cell } from 'recharts';
+import { ResponsiveContainer, ComposedChart, Bar, Line, YAxis, Tooltip, ReferenceLine, Cell } from 'recharts';
 import { MACDResult } from '@/utils/chartAnalytics';
 
 interface Props {
@@ -13,15 +13,15 @@ const MACDPanel: React.FC<Props> = ({ data, height = 96 }) => {
   // Calculate domain for Y-axis to ensure 0 is centered or appropriately placed
   // We need to account for both histogram and lines
   const allValues = data.flatMap(d => [
-    d.macd, 
-    d.signal, 
+    d.macd,
+    d.signal,
     d.histogram
   ].filter(v => !isNaN(v)));
-  
+
   const minVal = Math.min(...allValues);
   const maxVal = Math.max(...allValues);
   const absMax = Math.max(Math.abs(minVal), Math.abs(maxVal));
-  
+
   // Create symmetric domain for better visualization of zero line
   const domain = [-absMax, absMax];
 
@@ -45,40 +45,40 @@ const MACDPanel: React.FC<Props> = ({ data, height = 96 }) => {
           </span>
         </div>
       </div>
-      
+
       <div className="flex-1 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-            <YAxis 
-              hide 
-              domain={domain} 
+            <YAxis
+              hide
+              domain={domain}
             />
             <ReferenceLine y={0} stroke="#475569" strokeDasharray="3 3" />
-            
+
             <Bar dataKey="histogram" barSize={4} isAnimationActive={false}>
               {data.map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={entry.histogram >= 0 ? '#10b981' : '#ef4444'} 
+                <Cell
+                  key={`cell-${index}`}
+                  fill={entry.histogram >= 0 ? '#10b981' : '#ef4444'}
                   opacity={0.5}
                 />
               ))}
             </Bar>
-            
-            <Line 
-              type="monotone" 
-              dataKey="macd" 
-              stroke="#3b82f6" 
-              strokeWidth={1.5} 
+
+            <Line
+              type="monotone"
+              dataKey="macd"
+              stroke="#3b82f6"
+              strokeWidth={1.5}
               dot={false}
               isAnimationActive={false}
             />
-            
-            <Line 
-              type="monotone" 
-              dataKey="signal" 
-              stroke="#f97316" 
-              strokeWidth={1.5} 
+
+            <Line
+              type="monotone"
+              dataKey="signal"
+              stroke="#f97316"
+              strokeWidth={1.5}
               dot={false}
               isAnimationActive={false}
             />

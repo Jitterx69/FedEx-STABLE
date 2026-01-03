@@ -1,0 +1,12 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "admin",
+    "assignment",
+    "gateway",
+    "ingress",
+    "lifecycle",
+    "projection",
+    "regulator",
+]

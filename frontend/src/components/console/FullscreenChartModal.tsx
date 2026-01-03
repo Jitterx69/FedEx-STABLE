@@ -16,8 +16,9 @@ import StackedAreaChart from './charts/StackedAreaChart';
 import WaterfallChart from './charts/WaterfallChart';
 import HeatmapTimeline from './charts/HeatmapTimeline';
 import ScatterPlotChart from './charts/ScatterPlotChart';
-import AnnotationPanel, { Annotation } from './charts/AnnotationPanel';
-import ThresholdAlerts, { ThresholdAlert } from './charts/ThresholdAlerts';
+import AnnotationPanel from './charts/AnnotationPanel';
+import ThresholdAlerts from './charts/ThresholdAlerts';
+import { Annotation, ThresholdAlert } from '@/stores/annotationTypes';
 import MACDPanel from './charts/MACDPanel';
 import DrilldownModal from './charts/DrilldownModal';
 import { calculateRSI, calculateMACD, MACDResult } from '@/utils/chartAnalytics';
@@ -114,7 +115,9 @@ interface FullscreenChartModalProps {
   isOpen: boolean;
   onClose: () => void;
   isStableMode: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stableHistory: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   baselineHistory: any[];
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
@@ -129,7 +132,7 @@ const ToolDropdown = ({
   onToggle
 }: {
   label: string;
-  icon: any;
+  icon: React.ElementType;
   children: React.ReactNode;
   isOpen: boolean;
   onToggle: () => void;
@@ -162,7 +165,7 @@ const MenuItem = ({
   disabled
 }: {
   label: string;
-  icon?: any;
+  icon?: React.ElementType;
   checked?: boolean;
   onClick: () => void;
   disabled?: boolean;
@@ -184,7 +187,7 @@ const MenuItem = ({
 );
 
 // Statistics Panel Component
-const StatsPanel = ({ data, viewMode }: { data: any[]; viewMode: ViewMode }) => {
+const StatsPanel = ({ data, viewMode }: { data: { active?: number; recovered?: number; escalated?: number }[]; viewMode: ViewMode }) => {
   const stats = useMemo(() => {
     if (!data || data.length === 0) return null;
 
@@ -359,7 +362,11 @@ const FullscreenChartModal = ({
 
   // Reset measuring when closed
   useEffect(() => {
-    if (!isOpen) setIsMeasuring(false);
+    if (!isOpen) {
+      // Defer state update to avoid cascading effect
+      const t = setTimeout(() => setIsMeasuring(false), 0);
+      return () => clearTimeout(t);
+    }
   }, [isOpen]);
 
   // Close dropdown when clicking outside
@@ -385,7 +392,8 @@ const FullscreenChartModal = ({
     try {
       const stored = localStorage.getItem('sgc_chart_sessions');
       if (stored) {
-        setSavedSessions(JSON.parse(stored));
+        // Defer loaded state set
+        setTimeout(() => setSavedSessions(JSON.parse(stored)), 0);
       }
     } catch (e) {
       console.error("Failed to load sessions", e);
@@ -421,7 +429,8 @@ const FullscreenChartModal = ({
   // Initialize hash on open
   useEffect(() => {
     if (isOpen && !lastSavedHash) {
-      updateLastSavedHash();
+      // Defer hash update
+      setTimeout(() => updateLastSavedHash(), 0);
     }
   }, [isOpen]); // Only run once on open roughly
 
@@ -626,9 +635,7 @@ const FullscreenChartModal = ({
     setThresholdAlerts(prev => [...prev, newAlert]);
   }, []);
 
-  const handleUpdateThresholdAlert = useCallback((id: string, updates: Partial<ThresholdAlert>) => {
-    setThresholdAlerts(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
-  }, []);
+
 
   const handleDeleteThresholdAlert = useCallback((id: string) => {
     setThresholdAlerts(prev => prev.filter(a => a.id !== id));
@@ -1259,7 +1266,6 @@ const FullscreenChartModal = ({
       <ThresholdAlerts
         alerts={thresholdAlerts}
         onAdd={handleAddThresholdAlert}
-        onUpdate={handleUpdateThresholdAlert}
         onDelete={handleDeleteThresholdAlert}
         onToggle={handleToggleThresholdAlert}
         isOpen={showThresholdAlerts}

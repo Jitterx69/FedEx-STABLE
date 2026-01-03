@@ -80,25 +80,38 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Install Protobuf Compiler
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
       - name: Setup Rust Toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
           components: rustfmt, clippy
+
+      - name: Cache Cargo Registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            backend/crates/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Check Formatting
         run: cargo fmt --all -- --check
 
       - name: Linting (Clippy)
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Run Tests
-        run: cargo test --verbose
+        run: cargo test --all --verbose
 
       - name: Build Release
-        run: cargo build --release --verbose
+        run: cargo build --all --release --verbose
 
   # -----------------------------------------------------------------------------
   # MACHINE LEARNING (PYTHON)

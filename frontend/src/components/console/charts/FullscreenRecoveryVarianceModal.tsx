@@ -14,6 +14,24 @@ interface ChartDataPoint {
     cumulativeEscalated: number;
 }
 
+interface VarianceDataPoint {
+    name: number;
+    time: number;
+    variance: number;
+    actualVariance: number;
+    isPositive: boolean;
+    recovered: number;
+    escalated: number;
+    cumulativeVariance: number;
+    movingAvg: number;
+    isAnomaly: boolean;
+    upperBand: number;
+    lowerBand: number;
+    trend?: number | null;
+    golden?: number;
+    simulated?: number;
+}
+
 interface FullscreenRecoveryVarianceModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -22,7 +40,16 @@ interface FullscreenRecoveryVarianceModalProps {
 }
 
 // Reusable Dropdown (Local)
-const ToolDropdown = ({ label, icon: Icon, children, isOpen, onToggle, badge }: any) => (
+interface ToolDropdownProps {
+    label: string;
+    icon: React.ElementType;
+    children: React.ReactNode;
+    isOpen: boolean;
+    onToggle: () => void;
+    badge?: number | null;
+}
+
+const ToolDropdown = ({ label, icon: Icon, children, isOpen, onToggle, badge }: ToolDropdownProps) => (
     <div className="relative">
         <Button
             size="sm"
@@ -144,7 +171,8 @@ const FullscreenRecoveryVarianceModal = ({
                 upperBand: ma + stdDev,
                 lowerBand: ma - stdDev,
                 trend: null as number | null,
-                golden: null as number | null
+                golden: undefined as number | undefined,
+                simulated: undefined as number | undefined
             };
         });
 
@@ -188,7 +216,8 @@ const FullscreenRecoveryVarianceModal = ({
                     upperBand: 0,
                     lowerBand: 0,
                     trend: nextVal,
-                    golden: null
+                    golden: undefined,
+                    simulated: undefined
                 });
             }
         }
@@ -216,7 +245,7 @@ const FullscreenRecoveryVarianceModal = ({
                 // Apply to actual variance, but keep it roughly consistent direction-wise
                 if (d.actualVariance !== 0) {
                     d.simulated = d.actualVariance * multiplier;
-                } else if (d.trend !== null) {
+                } else if (d.trend != null) {
                     // Also affect trend if it exists
                     d.simulated = d.trend * multiplier;
                 }
@@ -316,7 +345,7 @@ const FullscreenRecoveryVarianceModal = ({
                             ].map(({ type, label, icon: Icon }) => (
                                 <button
                                     key={type}
-                                    onClick={() => { setChartType(type as any); setActiveDropdown(null); }}
+                                    onClick={() => { setChartType(type as 'bar' | 'line' | 'area'); setActiveDropdown(null); }}
                                     className="w-full text-left px-3 py-2 text-xs hover:bg-slate-700 flex items-center justify-between text-slate-300"
                                 >
                                     <div className="flex items-center gap-2"><Icon className="w-3.5 h-3.5" />{label}</div>
@@ -785,7 +814,7 @@ const FullscreenRecoveryVarianceModal = ({
                                             return null;
                                         }} />
                                         <Line type="monotone" dataKey="actualVariance" stroke={isStableMode ? '#10b981' : '#f59e0b'} strokeWidth={2}
-                                            dot={({ cx, cy, payload }: any) => (
+                                            dot={({ cx, cy, payload }: { cx: number; cy: number; payload: VarianceDataPoint }) => (
                                                 <circle cx={cx} cy={cy} r={showAnomalies && payload.isAnomaly ? 6 : 3}
                                                     fill={showAnomalies && payload.isAnomaly ? '#f59e0b' : isStableMode ? '#10b981' : '#f59e0b'}
                                                     stroke={showAnomalies && payload.isAnomaly ? '#fff' : 'none'} strokeWidth={2} />

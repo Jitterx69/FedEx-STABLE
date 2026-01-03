@@ -59,7 +59,9 @@ async fn main() {
         .route("/api/ingest/account", post(proxy_ingest))
         .route("/api/governance/controls", post(proxy_governance))
         .route("/api/accounts", get(list_accounts))
-        .route("/api/stats", get(get_system_stats)) // New route
+        .route("/api/stats", get(get_system_stats))
+        .route("/api/dca/:dca_id/assignments", get(list_dca_assignments))
+        .route("/api/resolve/account", post(proxy_resolve))
         .layer(cors)
         .with_state(state);
 
@@ -189,6 +191,63 @@ async fn get_system_stats(
     }
 
     Json(stats)
+}
+
+// DCA Assignment List
+#[derive(Serialize, sqlx::FromRow)]
+struct AssignmentView {
+    assignment_id: String,
+    account_id: String,
+    balance: f64,
+    dpd: i32,
+    status: String,
+}
+
+async fn list_dca_assignments(
+    State(state): State<Arc<AppState>>,
+    axum::extract::Path(dca_id): axum::extract::Path<String>,
+) -> Json<Vec<AssignmentView>> {
+    let assignments = sqlx::query_as::<_, AssignmentView>(
+        r#"
+        SELECT 
+            ass.assignment_id, 
+            acc.account_id, 
+            acc.outstanding_balance as balance, 
+            acc.days_past_due as dpd,
+            acc.status
+        FROM assignments ass
+        JOIN accounts acc ON ass.account_id = acc.account_id
+        WHERE ass.dca_id = $1
+        ORDER BY acc.days_past_due DESC
+        "#
+    )
+    .bind(dca_id)
+    .fetch_all(&state.db_pool)
+    .await
+    .unwrap_or_default();
+
+    Json(assignments)
+}
+
+// Proxy Resolve
+async fn proxy_resolve(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<Value>,
+) -> impl axum::response::IntoResponse {
+    let resp = state.http_client
+        .post(format!("{}/resolve/account", state.ingress_url))
+        .json(&payload)
+        .send()
+        .await;
+
+    match resp {
+        Ok(r) => {
+            let status = axum::http::StatusCode::from_u16(r.status().as_u16())
+                .unwrap_or(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+            (status, AxumJson(r.json::<Value>().await.unwrap_or_default()))
+        },
+        Err(_) => (axum::http::StatusCode::BAD_GATEWAY, AxumJson(serde_json::json!({"error": "Ingress unavailable"}))),
+    }
 }
 
 // Helper alias to avoid confusing axum::Json with reqwest::Json

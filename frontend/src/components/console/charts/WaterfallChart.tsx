@@ -164,7 +164,14 @@ const WaterfallChart = ({ data, showCumulative = true }: Props) => {
   );
 };
 
-const CustomTooltip = ({ active, payload, showCumulative }: any) => {
+interface CustomTooltipProps {
+  active?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any[];
+  showCumulative?: boolean;
+}
+
+const CustomTooltip = ({ active, payload, showCumulative }: CustomTooltipProps) => {
   if (!active || !payload || payload.length === 0) return null;
   const entry = payload[0].payload as WaterfallEntry;
 

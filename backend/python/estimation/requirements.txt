@@ -5,3 +5,5 @@ numpy
 scikit-learn
 pandas
 grpcio-tools
+psycopg2-binary
+flask

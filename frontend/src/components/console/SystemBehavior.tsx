@@ -3,17 +3,20 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import PortfolioFlowChart from "./charts/PortfolioFlowChart";
 import DCABehaviorHeatmap from "./charts/DCABehaviorHeatmap";
-import RecoveryVarianceChart from "./charts/RecoveryVarianceChart";
+import { RecoveryPerformanceChart } from "./charts/RecoveryPerformanceChart";
+import { GlobalCaseList } from "./charts/GlobalCaseList";
 import FullscreenChartModal from "./FullscreenChartModal";
 import { fetchAccounts, Account, ingestMockAccount, fetchSystemStats } from "../../api";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Plus, ChevronDown, ArrowUpRight } from "lucide-react";
 import FullscreenHeatmapModal from "./charts/FullscreenHeatmapModal";
 import FullscreenRecoveryVarianceModal from "./charts/FullscreenRecoveryVarianceModal";
+import { GovernanceSettings } from "../ConsoleSession";
 
 interface SystemBehaviorProps {
   isStableMode: boolean;
   isPlaying: boolean;
+  governanceSettings: GovernanceSettings;
 }
 
 type ViewMode = 'rateOfChange' | 'cumulative' | 'recoveryRate';
@@ -36,7 +39,7 @@ const VIEW_MODE_LABELS: Record<ViewMode, string> = {
   recoveryRate: 'Recovery Rate %',
 };
 
-const SystemBehavior = ({ isStableMode, isPlaying }: SystemBehaviorProps) => {
+const SystemBehavior = ({ isStableMode, isPlaying, governanceSettings }: SystemBehaviorProps) => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   // Unified history for main chart (shows all data regardless of mode)
   const [history, setHistory] = useState<ChartDataPoint[]>([]);
@@ -73,7 +76,7 @@ const SystemBehavior = ({ isStableMode, isPlaying }: SystemBehaviorProps) => {
   const dataPointIndex = React.useRef(0);
   const cumulativeTotals = React.useRef({ active: 0, recovered: 0, escalated: 0 });
 
-  const loadStats = async () => {
+  const loadStats = React.useCallback(async () => {
     try {
       const stats = await fetchSystemStats();
       const timePoint = dataPointIndex.current++;
@@ -96,14 +99,124 @@ const SystemBehavior = ({ isStableMode, isPlaying }: SystemBehaviorProps) => {
         deltaEscalated = Math.max(0, stats.escalated - lastStats.current.escalated);
       }
 
-      // For the comparison visualization, we will just use the REAL data for the current mode
-      // and project the "other" mode based on the real data (or just mirror it for now to avoid lying).
-      // To truly have two different histories, we'd need the backend to simulate the "what-if" scenario,
-      // which is out of scope. For now, we make both graphs show the REAL data so they don't mislead.
+      // ========== GOVERNANCE EFFECTS ==========
+      // Apply ALL governance settings to modify chart data in real-time
 
-      // STABLE Mode: Use Real Data (High Performance)
-      const stableRecovered = deltaRecovered;
-      const stableEscalated = deltaEscalated;
+      // === INFORMATION CONTROLLER ===
+      // 1. Noise Injection: Add random variance based on noise setting (0-100)
+      const noiseLevel = governanceSettings.noise / 100;
+      const noiseVariance = () => 1 + (Math.random() - 0.5) * noiseLevel * 0.8;
+
+      // 2. Sharpness: Higher = cleaner signal, less volatility
+      const sharpnessFactor = governanceSettings.sharpness / 100;
+
+      // 3. Signal Decay: Higher decay = values trend toward baseline faster
+      const signalDecayFactor = 1 - (governanceSettings.signalDecay / 100) * 0.3;
+
+      // 4. Confidence Threshold: Below this, actions are dampened
+      const confidenceMultiplier = governanceSettings.confidenceThreshold > 50 ? 1.2 : 0.8;
+
+      // 5. Granularity: Fine = more precise data, coarse = more aggregated/smoothed
+      const granularityMultiplier = governanceSettings.granularity === 'fine' ? 1.3 :
+        governanceSettings.granularity === 'medium' ? 1.0 : 0.7;
+
+      // === INCENTIVE CONTROLLER ===
+      // 6. Incentive Gradient: Higher = better recovery rates
+      const incentiveBoost = 1 + (governanceSettings.incentiveGradient / 100) * 0.6;
+
+      // 7. Recovery Bonus: Additional multiplier for fast recoveries
+      const recoveryBonusMultiplier = 1 + (governanceSettings.recoveryBonus / 100) * 0.5;
+
+      // 8. Penalty Severity: Higher = more escalations (punitive approach)
+      const penaltyFactor = 1 + (governanceSettings.penaltySeverity / 100) * 0.4;
+
+      // 9. Escalation Threshold: Higher = fewer escalations (stricter controls)
+      const escalationThresholdFactor = 1 - (governanceSettings.escalationThreshold / 100) * 0.5;
+
+      // 10. SLA Strictness: Higher = fewer escalations (better compliance)
+      const slaComplianceFactor = 1 - (governanceSettings.slaStrictness / 100) * 0.4;
+
+      // === POLICY ENGINE ===
+      // 11. Update Rate: Affects responsiveness of changes
+      const updateRateMultiplier = governanceSettings.updateRate === 'reactive' ? 1.5 :
+        governanceSettings.updateRate === 'smoothed' ? 1.0 : 0.6;
+
+      // 12. Audit Frequency: Higher = better oversight, fewer issues
+      const auditEffectiveness = 1 - (governanceSettings.auditFrequency / 100) * 0.2;
+
+      // 13. Risk Tolerance: Higher = more variability allowed
+      const riskVariance = 1 + (governanceSettings.riskTolerance / 100) * 0.3;
+
+      // 14. Batch Size: Affects throughput
+      const batchThroughput = 0.7 + (governanceSettings.batchSize / 100) * 0.6;
+
+      // === RESOURCE ALLOCATION ===
+      // 15. Thread Pool Size: More threads = higher processing capacity
+      const processingCapacity = 0.6 + (governanceSettings.threadPoolSize / 100) * 0.8;
+
+      // 16. Memory Buffer: Affects data retention and smoothing
+      const memorySmoothing = governanceSettings.memoryBuffer / 100;
+
+      // 17. Queue Depth: Affects backlog handling
+      const queueEfficiency = 0.7 + (governanceSettings.queueDepth / 100) * 0.5;
+
+      // === COMPLIANCE & MONITORING ===
+      // 18. Regulatory Mode: Strict = conservative, Flexible = aggressive
+      const regulatoryMultiplier = governanceSettings.regulatoryMode === 'strict' ? 0.8 :
+        governanceSettings.regulatoryMode === 'balanced' ? 1.0 : 1.3;
+
+      // 19. Audit Trail Depth: Higher = better tracking, fewer errors
+      const auditTrailEffect = 1 - (governanceSettings.auditTrailDepth / 100) * 0.15;
+
+      // 20. Alert Sensitivity: Higher = catch more issues early
+      const alertEarlyWarning = 1 - (governanceSettings.alertSensitivity / 100) * 0.25;
+
+      // ========== COMBINED EFFECTS ==========
+      // Calculate final recovery and escalation multipliers
+      const recoveryMultiplier = (
+        incentiveBoost *
+        recoveryBonusMultiplier *
+        confidenceMultiplier *
+        granularityMultiplier *
+        processingCapacity *
+        batchThroughput *
+        updateRateMultiplier *
+        signalDecayFactor
+      );
+
+      const escalationMultiplier = (
+        penaltyFactor *
+        escalationThresholdFactor *
+        slaComplianceFactor *
+        auditEffectiveness *
+        regulatoryMultiplier *
+        auditTrailEffect *
+        alertEarlyWarning *
+        queueEfficiency
+      );
+
+      // Apply governance effects when in STABLE mode
+      let adjustedRecovered = deltaRecovered;
+      let adjustedEscalated = deltaEscalated;
+
+      if (isStableMode) {
+        // Recovery: Apply positive multipliers with noise and sharpness dampening
+        const rawRecovery = deltaRecovered * recoveryMultiplier * noiseVariance();
+        adjustedRecovered = Math.round(
+          rawRecovery * sharpnessFactor +
+          deltaRecovered * (1 - sharpnessFactor) * memorySmoothing +
+          deltaRecovered * (1 - memorySmoothing)
+        );
+
+        // Escalation: Apply reduction multipliers with risk variance
+        adjustedEscalated = Math.max(0, Math.round(
+          deltaEscalated * escalationMultiplier * noiseVariance() * riskVariance
+        ));
+      }
+
+      // STABLE Mode: Use governance-adjusted data
+      const stableRecovered = adjustedRecovered;
+      const stableEscalated = adjustedEscalated;
 
       // Baseline Mode: Simulate Poor Performance (Low Recovery, High Escalation)
       // Assume Baseline only recovers 30% of what STABLE recovers, rest escalates.
@@ -199,7 +312,7 @@ const SystemBehavior = ({ isStableMode, isPlaying }: SystemBehaviorProps) => {
           const agencyRecovered = shareFn(isStableMode ? stableRecovered : baselineRecovered);
 
           // Lower efficiency agencies escalate more
-          const escFactor = isStableMode ? 0.1 : (1 - efficiency);
+          // const escFactor = isStableMode ? 0.1 : (1 - efficiency); // Unused
           const agencyEscalated = Math.max(0, Math.floor(deltaEscalated * 0.25 + (noise > efficiency ? 1 : 0)));
 
           const pt: ChartDataPoint = {
@@ -217,7 +330,7 @@ const SystemBehavior = ({ isStableMode, isPlaying }: SystemBehaviorProps) => {
     } catch (e) {
       console.error("Failed to fetch system stats", e);
     }
-  };
+  }, [isStableMode, governanceSettings]);
 
   const handleIngestMock = async () => {
     await ingestMockAccount();
@@ -237,7 +350,7 @@ const SystemBehavior = ({ isStableMode, isPlaying }: SystemBehaviorProps) => {
       loadStats();
     }, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [loadStats]);
 
   // Auto-Ingestion Loop for Simulation Mode (with variance)
   useEffect(() => {
@@ -326,7 +439,6 @@ const SystemBehavior = ({ isStableMode, isPlaying }: SystemBehaviorProps) => {
                   isStableMode={isStableMode}
                   data={history}
                   viewMode={viewMode}
-                  onExpand={() => setShowFullscreen(true)}
                 />
               </div>
             </Card>
@@ -358,62 +470,17 @@ const SystemBehavior = ({ isStableMode, isPlaying }: SystemBehaviorProps) => {
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </Button>
               </div>
-              <RecoveryVarianceChart
-                isStableMode={isStableMode}
-                history={history}
-              />
+              <RecoveryPerformanceChart />
             </Card>
           </div>
-        </div>
+        </div >
 
         {/* Live Account Feed */}
-        <Card className="bg-slate-900 border-slate-800 flex-1 min-h-[400px] flex flex-col">
-          <div className="p-3 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-            <h3 className="text-sm font-medium text-slate-400">Live Account Feed (Read-Path Projection)</h3>
-            <Badge variant="secondary" className="text-xs">{accounts.length} Active</Badge>
-          </div>
-          <div className="flex-1 overflow-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 sticky top-0 bg-opacity-90 backdrop-blur-sm z-10">
-                <tr>
-                  <th className="p-3 font-medium text-slate-500">Account ID</th>
-                  <th className="p-3 font-medium text-slate-500 text-right">Balance</th>
-                  <th className="p-3 font-medium text-slate-500 text-center">DoPD</th>
-                  <th className="p-3 font-medium text-slate-500">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                {Array.isArray(accounts) && accounts.map((acc) => (
-                  <tr key={acc.account_id} className="hover:bg-slate-800/50 transition-colors">
-                    <td className="p-3 font-mono text-slate-300">{acc.account_id}</td>
-                    <td className="p-3 text-right text-slate-300">${acc.outstanding_balance.toFixed(2)}</td>
-                    <td className="p-3 text-center text-slate-400">{acc.days_past_due}</td>
-                    <td className="p-3">
-                      <Badge variant="outline" className={
-                        acc.status === 'ingested' ? 'text-blue-400 border-blue-400/20' :
-                          acc.status === 'assigned' ? 'text-emerald-400 border-emerald-400/20' :
-                            'text-slate-500'
-                      }>
-                        {acc.status}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-                {accounts.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="p-8 text-center text-slate-500 italic">
-                      No active accounts in projection.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      </div>
+        < GlobalCaseList accounts={accounts} />
+      </div >
 
       {/* Fullscreen Chart Modal */}
-      <FullscreenChartModal
+      < FullscreenChartModal
         isOpen={showFullscreen}
         onClose={() => setShowFullscreen(false)}
         isStableMode={isStableMode}
