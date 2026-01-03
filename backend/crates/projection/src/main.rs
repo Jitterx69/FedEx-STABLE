@@ -77,7 +77,6 @@ async fn process_event(envelope: proto::EventEnvelope, state: &Arc<ProjectionSta
         match payload {
             proto::event_envelope::Payload::AccountIngested(event) => {
                 // Upsert Account
-                // Upsert Account
                 let result = sqlx::query(
                     r#"
                     INSERT INTO accounts (account_id, outstanding_balance, days_past_due, status)
@@ -86,12 +85,13 @@ async fn process_event(envelope: proto::EventEnvelope, state: &Arc<ProjectionSta
                     SET outstanding_balance = EXCLUDED.outstanding_balance,
                         days_past_due = EXCLUDED.days_past_due,
                         updated_at = NOW()
-                    "#)
-                    .bind(&event.account_id)
-                    .bind(event.outstanding_balance)
-                    .bind(event.days_past_due)
-                    .execute(&state.db_pool)
-                    .await;
+                    "#,
+                )
+                .bind(&event.account_id)
+                .bind(event.outstanding_balance)
+                .bind(event.days_past_due)
+                .execute(&state.db_pool)
+                .await;
 
                 if let Err(e) = result {
                     error!("DB Error on AccountIngested: {}", e);
@@ -126,16 +126,20 @@ async fn process_event(envelope: proto::EventEnvelope, state: &Arc<ProjectionSta
                 }
             }
             proto::event_envelope::Payload::AccountRecovered(event) => {
-                let _ = sqlx::query("UPDATE accounts SET status = 'recovered', updated_at = NOW() WHERE account_id = $1")
-                    .bind(&event.account_id)
-                    .execute(&state.db_pool)
-                    .await;
+                let _ = sqlx::query(
+                    "UPDATE accounts SET status = 'recovered', updated_at = NOW() WHERE account_id = $1",
+                )
+                .bind(&event.account_id)
+                .execute(&state.db_pool)
+                .await;
             }
             proto::event_envelope::Payload::AccountEscalated(event) => {
-                let _ = sqlx::query("UPDATE accounts SET status = 'escalated', updated_at = NOW() WHERE account_id = $1")
-                    .bind(&event.account_id)
-                    .execute(&state.db_pool)
-                    .await;
+                let _ = sqlx::query(
+                    "UPDATE accounts SET status = 'escalated', updated_at = NOW() WHERE account_id = $1",
+                )
+                .bind(&event.account_id)
+                .execute(&state.db_pool)
+                .await;
             }
             _ => {
                 info!("Event type not handled by projection yet.");
