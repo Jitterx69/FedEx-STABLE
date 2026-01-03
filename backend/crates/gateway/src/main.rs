@@ -10,6 +10,9 @@ use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 
+// Helper alias to avoid confusing axum::Json with reqwest::Json
+use axum::Json as AxumJson;
+
 #[derive(Clone)]
 struct AppState {
     db_pool: sqlx::PgPool,
