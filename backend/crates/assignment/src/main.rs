@@ -59,12 +59,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let estimation_url = std::env::var("ESTIMATION_URL")
         .unwrap_or_else(|_| "http://localhost:5001/predict".to_string());
 
-    // Mock DCA Performance for Weighted Random
-    let dca_ids = ["DCA_ALPHA", "DCA_BETA", "DCA_GAMMA"];
-    let weights = [80, 50, 20]; // Alpha is best, Gamma is worst
-    let dist = rand::distributions::WeightedIndex::new(weights).unwrap();
-    let mut rng = rand::thread_rng();
-
     // 4. Assignment Loop
     loop {
         // A. Poll for unassigned accounts
@@ -113,9 +107,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 probability * 100.0
             );
 
-            // C. Weighted Random Selection
-            use rand::distributions::Distribution;
-            let selected_dca = dca_ids[dist.sample(&mut rng)];
+            // C. AI-Driven Selection Strategy
+            // "Smart Routing": Best accounts go to the best agencies (High recovery chance -> Low friction agency)
+            // Low chance accounts go to aggressive agencies.
+            let selected_dca = if probability > 0.7 {
+                "DCA_ALPHA" // Premium Agency (Low friction, High touch)
+            } else if probability > 0.4 {
+                "DCA_BETA" // Standard Agency
+            } else {
+                "DCA_GAMMA" // Aggressive/Bulk Agency
+            };
 
             info!("-> Assigning to {}", selected_dca);
 

@@ -9,6 +9,13 @@ export const api = axios.create({
     },
 });
 
+// Add Auth Token to every request
+api.interceptors.request.use((config) => {
+    // In a real app, this would come from a Context/Store
+    config.headers.Authorization = 'Bearer mock-jwt-token-admin-role';
+    return config;
+});
+
 export interface GovernanceControls {
     information_sharpness: number;
     noise_injection: number;
