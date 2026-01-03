@@ -277,9 +277,13 @@ use axum::http::Request;
 use axum::middleware::Next;
 use axum::response::Response;
 
-async fn auth_middleware(req: Request<axum::body::Body>, next: Next) -> Result<Response, axum::http::StatusCode> {
+async fn auth_middleware(
+    req: Request<axum::body::Body>,
+    next: Next,
+) -> Result<Response, axum::http::StatusCode> {
     // 1. Check for Authorization Header
-    let auth_header = req.headers()
+    let auth_header = req
+        .headers()
         .get(axum::http::header::AUTHORIZATION)
         .and_then(|header| header.to_str().ok());
 
@@ -292,7 +296,7 @@ async fn auth_middleware(req: Request<axum::body::Body>, next: Next) -> Result<R
             // In a real production app, we would use `jsonwebtoken` here to decode and verify signature.
             // For the Hackathon Demo, we are verifying that the Client IS sending a token.
             // verifying "Mock Auth" presence matches the requirement "Secure role-based portals" conceptually.
-            
+
             // if _token == "mock-jwt-token-admin-role" { ... }
 
             Ok(next.run(req).await)
