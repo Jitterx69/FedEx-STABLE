@@ -104,13 +104,13 @@ async fn process_event(envelope: proto::EventEnvelope, state: &Arc<ProjectionSta
                 // Update Account Status & Insert Assignment
                 let mut tx = state.db_pool.begin().await.unwrap();
 
-                let q1 =
+                let _q1 =
                     sqlx::query("UPDATE accounts SET status = 'assigned' WHERE account_id = $1")
                         .bind(&event.account_id)
                         .execute(&mut *tx)
                         .await;
 
-                let q2 = sqlx::query(
+                let _q2 = sqlx::query(
                     r#"
                     INSERT INTO assignments (assignment_id, account_id, dca_id)
                     VALUES ($1, $2, $3)

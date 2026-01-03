@@ -15,10 +15,6 @@ pub mod stable_proto {
 }
 use stable_proto::events::v1 as proto;
 
-// Hardcoded for Phase 2
-const DCA_POOL: &[&str] = &["DCA_ALPHA", "DCA_BETA", "DCA_GAMMA"];
-const MAX_CAPACITY_PER_DCA: i64 = 50; // Simple constraint
-
 #[derive(sqlx::FromRow)]
 struct UnassignedAccount {
     account_id: String,
@@ -35,6 +31,7 @@ struct PredictionRequest {
 #[derive(serde::Deserialize)]
 struct PredictionResponse {
     recovery_probability: Option<f64>,
+    #[allow(dead_code)]
     error: Option<String>,
 }
 
