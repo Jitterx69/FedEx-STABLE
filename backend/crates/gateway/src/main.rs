@@ -307,4 +307,3 @@ async fn auth_middleware(
         }
     }
 }
-
