@@ -59,10 +59,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let estimation_url = std::env::var("ESTIMATION_URL")
         .unwrap_or_else(|_| "http://localhost:5001/predict".to_string());
 
-    // Mock DCA Performance for Weighted Random (Removed in favor of AI Logic)
-    // let dca_ids = ["DCA_ALPHA", "DCA_BETA", "DCA_GAMMA"];
-    // let weights = [80, 50, 20]; 
-    // ...
+
 
     // 4. Assignment Loop
     loop {
@@ -118,7 +115,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let selected_dca = if probability > 0.7 {
                 "DCA_ALPHA" // Premium Agency (Low friction, High touch)
             } else if probability > 0.4 {
-                "DCA_BETA"  // Standard Agency
+                "DCA_BETA" // Standard Agency
             } else {
                 "DCA_GAMMA" // Aggressive/Bulk Agency
             };
