@@ -1,13 +1,16 @@
 import { useMemo } from 'react';
+import type { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { X, DollarSign, Users, AlertTriangle, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import DCABehaviorHeatmap from './console/charts/DCABehaviorHeatmap';
 import RecoveryVarianceChart from './console/charts/RecoveryVarianceChart';
+import type { DcaAssignment } from '../api';
 
 // --- Shared Modal Layout ---
-const ModalLayout = ({ title, icon: Icon, onClose, children }: { title: string, icon: any, onClose: () => void, children: React.ReactNode }) => (
+const ModalLayout = ({ title, icon: Icon, onClose, children }: { title: string, icon: LucideIcon, onClose: () => void, children: ReactNode }) => (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
         <div className="w-full max-w-4xl max-h-[90vh] bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
             <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/50 flex-none">
@@ -29,7 +32,7 @@ const ModalLayout = ({ title, icon: Icon, onClose, children }: { title: string, 
 );
 
 // --- Assigned Cases Modal ---
-export const AssignedCasesModal = ({ assignments, onClose }: { assignments: any[], onClose: () => void }) => {
+export const AssignedCasesModal = ({ assignments, onClose }: { assignments: DcaAssignment[], onClose: () => void }) => {
     const stats = useMemo(() => {
         const byStatus = [
             { name: 'Assigned', value: assignments.filter(a => a.status === 'assigned').length, color: '#3b82f6' },
@@ -122,7 +125,7 @@ export const AssignedCasesModal = ({ assignments, onClose }: { assignments: any[
 };
 
 // --- Active Value Modal ---
-export const ActiveValueModal = ({ assignments, onClose }: { assignments: any[], onClose: () => void }) => {
+export const ActiveValueModal = ({ assignments, onClose }: { assignments: DcaAssignment[], onClose: () => void }) => {
     const stats = useMemo(() => {
         const valueByStatus = [
             { name: 'Assigned', value: assignments.filter(a => a.status === 'assigned').reduce((s, a) => s + a.balance, 0), color: '#3b82f6' },
@@ -191,13 +194,14 @@ export const ActiveValueModal = ({ assignments, onClose }: { assignments: any[],
 
 // --- Probability & Heatmap Modal ---
 export const ProbabilityModal = ({ dcaId, onClose }: { dcaId: string, onClose: () => void }) => {
-    // Mock Historical Data for Charts
+    // Static Mock Historical Data for Charts (deterministic to avoid ESLint impure function error)
     const historyData = useMemo(() => {
+        // Generate deterministic data based on index
         return Array.from({ length: 30 }, (_, i) => ({
             time: i,
-            active: Math.floor(Math.random() * 50) + 20,
-            recovered: Math.floor(Math.random() * 20),
-            escalated: Math.floor(Math.random() * 10),
+            active: 40 + (i % 20),
+            recovered: 8 + (i % 12),
+            escalated: 3 + (i % 7),
             cumulativeActive: 0,
             cumulativeRecovered: 0,
             cumulativeEscalated: 0

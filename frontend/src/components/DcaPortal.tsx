@@ -153,12 +153,6 @@ const DcaPortal = () => {
     // Summary Card Modal State
     const [activeModal, setActiveModal] = useState<'cases' | 'value' | 'probability' | null>(null);
 
-    useEffect(() => {
-        if (isLoggedIn) {
-            loadAssignments();
-        }
-    }, [isLoggedIn, dcaId]);
-
     const loadAssignments = async () => {
         try {
             const data = await fetchDcaAssignments(dcaId);
@@ -167,6 +161,13 @@ const DcaPortal = () => {
             console.error("Failed to fetch assignments", error);
         }
     };
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            loadAssignments();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLoggedIn, dcaId]);
 
     const handleLogin = () => {
         setIsLoggedIn(true);

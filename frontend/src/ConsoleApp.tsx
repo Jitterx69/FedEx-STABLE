@@ -5,7 +5,7 @@ import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { Plus, X, LayoutGrid, Pin, VolumeX, Columns2 } from "lucide-react";
 
 // Tab color options
-const TAB_COLORS = ['default', 'red', 'orange', 'amber', 'green', 'emerald', 'cyan', 'blue', 'purple', 'pink'] as const;
+export const TAB_COLORS = ['default', 'red', 'orange', 'amber', 'green', 'emerald', 'cyan', 'blue', 'purple', 'pink'] as const;
 type TabColor = typeof TAB_COLORS[number];
 
 const TAB_COLOR_CLASSES: Record<TabColor, { bg: string; border: string; text: string }> = {
@@ -291,7 +291,7 @@ export default function ConsoleApp() {
               setTabs(loaded);
               setActiveTabId(loaded[0].id);
             }
-          } catch (err) {
+          } catch {
             alert('Failed to load session file');
           }
         };

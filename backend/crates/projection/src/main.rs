@@ -100,27 +100,29 @@ async fn process_event(envelope: proto::EventEnvelope, state: &Arc<ProjectionSta
             proto::event_envelope::Payload::AssignmentCreated(event) => {
                 // Update Account Status & Insert Assignment
                 let mut tx = state.db_pool.begin().await.unwrap();
-                
+
                 let q1 = sqlx::query(
-                    "UPDATE accounts SET status = 'assigned' WHERE account_id = $1")
-                    .bind(&event.account_id)
-                    .execute(&mut *tx)
-                    .await;
+                    "UPDATE accounts SET status = 'assigned' WHERE account_id = $1",
+                )
+                .bind(&event.account_id)
+                .execute(&mut *tx)
+                .await;
 
                 let q2 = sqlx::query(
                     r#"
                     INSERT INTO assignments (assignment_id, account_id, dca_id)
                     VALUES ($1, $2, $3)
                     ON CONFLICT (assignment_id) DO NOTHING
-                    "#)
-                    .bind(&event.assignment_id)
-                    .bind(&event.account_id)
-                    .bind(&event.dca_id)
+                    "#,
+                )
+                .bind(&event.assignment_id)
+                .bind(&event.account_id)
+                .bind(&event.dca_id)
                 .execute(&mut *tx)
                 .await;
 
                 if let Err(e) = tx.commit().await {
-                   error!("Transaction failed for Assignment: {}", e);
+                    error!("Transaction failed for Assignment: {}", e);
                 }
             }
             proto::event_envelope::Payload::AccountRecovered(event) => {
