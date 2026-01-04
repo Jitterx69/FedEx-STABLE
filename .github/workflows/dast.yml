@@ -1,4 +1,4 @@
-# checkov:skip=CKV_GHA_7:DAST workflow requires manual inputs for target URL
+
 name: DAST (Dynamic Application Security Testing)
 
 on:
