@@ -6,11 +6,9 @@ on:
       target_url:
         description: 'Target URL to scan (e.g., https://staging.example.com)'
         required: true
-        default: 'http://localhost:3000'
       scan_type:
         description: 'Scan type'
         required: true
-        default: 'baseline'
         type: choice
         options:
           - baseline
