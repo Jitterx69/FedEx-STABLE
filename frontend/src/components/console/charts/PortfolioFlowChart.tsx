@@ -621,6 +621,7 @@ const PortfolioFlowChart = ({
             allowDataOverflow={true}
             tick={{ fontSize: 10, fill: '#64748b' }}
             width={45}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             tickFormatter={(v: any) => {
               const range = yDomain[1] - yDomain[0];
               if (range < 2) return v.toFixed(2);
@@ -638,7 +639,9 @@ const PortfolioFlowChart = ({
             contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', fontSize: '11px' }}
             itemStyle={{ fontSize: '11px' }}
             labelStyle={{ color: '#ffffff' }}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             labelFormatter={(v: any) => `Time: ${v}`}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             formatter={(value: any) => viewMode === 'recoveryRate' ? `${Number(value).toFixed(1)}%` : Number(value).toFixed(0)}
           />
           {/* Main Data Lines - conditionally rendered */}
