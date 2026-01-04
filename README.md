@@ -19,7 +19,6 @@
 14. [Project Structure & Code Organization](#project-structure--code-organization)
 15. [Contribution Guidelines](#contribution-guidelines)
 16. [Roadmap & Future Enhancements](#roadmap--future-enhancements)
-17. [License & Legal](#license--legal)
 18. [Contact & Support](#contact--support)
 
 ---
@@ -324,19 +323,9 @@ FedEx-STABLE/
 
 ---
 
-## License & Legal
-**Proprietary – All rights reserved.**
-
-The software is licensed under a commercial agreement. Redistribution or reverse‑engineering is prohibited without explicit permission from the copyright holder.
-
----
-
 ## Contact & Support
 - **Maintainer**: Jitterx ([@jitterx69](https://github.com/Jitterx69))
 - **Issues**: Open a GitHub issue for bugs, feature requests, or security disclosures.
-- **Slack**: Join the `#stable-dev` channel in the company workspace for real‑time assistance.
 - **Email**: support@stable‑engine.com
 
 ---
-
-*Generated on 2026‑01‑03 by Antigravity – your AI coding assistant.*
