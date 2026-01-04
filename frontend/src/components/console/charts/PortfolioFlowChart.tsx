@@ -621,7 +621,8 @@ const PortfolioFlowChart = ({
             allowDataOverflow={true}
             tick={{ fontSize: 10, fill: '#64748b' }}
             width={45}
-            tickFormatter={(v) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            tickFormatter={(v: any) => {
               const range = yDomain[1] - yDomain[0];
               if (range < 2) return v.toFixed(2);
               if (range < 10) return v.toFixed(1);
@@ -638,8 +639,10 @@ const PortfolioFlowChart = ({
             contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', fontSize: '11px' }}
             itemStyle={{ fontSize: '11px' }}
             labelStyle={{ color: '#ffffff' }}
-            labelFormatter={(v) => `Time: ${v}`}
-            formatter={(value: number) => viewMode === 'recoveryRate' ? `${value.toFixed(1)}%` : value.toFixed(0)}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            labelFormatter={(v: any) => `Time: ${v}`}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            formatter={(value: any) => viewMode === 'recoveryRate' ? `${Number(value).toFixed(1)}%` : Number(value).toFixed(0)}
           />
           {/* Main Data Lines - conditionally rendered */}
           {config.showActive && (
@@ -836,7 +839,6 @@ const PortfolioFlowChart = ({
               stroke="#3b82f6"
               strokeDasharray="3 3"
               opacity={0.8}
-              isFront={true}
               strokeWidth={2}
             >
               <Label
@@ -863,7 +865,6 @@ const PortfolioFlowChart = ({
               segment={[{ x: effectiveMeasurePoints[0].x, y: effectiveMeasurePoints[0].y }, { x: effectiveMeasurePoints[1].x, y: effectiveMeasurePoints[1].y }]}
               stroke="#3b82f6"
               strokeDasharray="4 4"
-              isFront={true}
               strokeWidth={2}
             >
               <Label
