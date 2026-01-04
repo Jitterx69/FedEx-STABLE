@@ -33,6 +33,12 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
+        config: |
+          paths-ignore:
+            - '**/node_modules'
+            - '**/dist'
+            - '**/*.test.ts'
+            - '**/*.spec.ts'
 
     - name: Autobuild
       uses: github/codeql-action/autobuild@v3
