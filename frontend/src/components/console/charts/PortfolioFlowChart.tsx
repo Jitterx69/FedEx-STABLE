@@ -621,7 +621,7 @@ const PortfolioFlowChart = ({
             allowDataOverflow={true}
             tick={{ fontSize: 10, fill: '#64748b' }}
             width={45}
-            tickFormatter={(v) => {
+            tickFormatter={(v: any) => {
               const range = yDomain[1] - yDomain[0];
               if (range < 2) return v.toFixed(2);
               if (range < 10) return v.toFixed(1);
@@ -638,7 +638,7 @@ const PortfolioFlowChart = ({
             contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', fontSize: '11px' }}
             itemStyle={{ fontSize: '11px' }}
             labelStyle={{ color: '#ffffff' }}
-            labelFormatter={(v) => `Time: ${v}`}
+            labelFormatter={(v: any) => `Time: ${v}`}
             formatter={(value: any) => viewMode === 'recoveryRate' ? `${Number(value).toFixed(1)}%` : Number(value).toFixed(0)}
           />
           {/* Main Data Lines - conditionally rendered */}
