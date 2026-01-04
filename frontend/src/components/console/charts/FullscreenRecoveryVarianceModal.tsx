@@ -14,25 +14,6 @@ interface ChartDataPoint {
     cumulativeEscalated: number;
 }
 
-// VarianceDataPoint is currently not used directly but kept for reference
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface VarianceDataPoint {
-    name: number;
-    time: number;
-    variance: number;
-    actualVariance: number;
-    isPositive: boolean;
-    recovered: number;
-    escalated: number;
-    cumulativeVariance: number;
-    movingAvg: number;
-    isAnomaly: boolean;
-    upperBand: number;
-    lowerBand: number;
-    trend?: number | null;
-    golden?: number;
-    simulated?: number;
-}
 
 interface FullscreenRecoveryVarianceModalProps {
     isOpen: boolean;
