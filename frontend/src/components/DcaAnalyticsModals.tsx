@@ -151,7 +151,8 @@ export const ActiveValueModal = ({ assignments, onClose }: { assignments: DcaAss
                                 <Tooltip
                                     cursor={{ fill: '#1e293b' }}
                                     contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }}
-                                    formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']}
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    formatter={(value: any) => [`$${Number(value).toLocaleString()}`, 'Value']}
                                     itemStyle={{ color: '#e2e8f0' }}
                                 />
                                 <Bar dataKey="value" radius={[0, 4, 4, 0]}>

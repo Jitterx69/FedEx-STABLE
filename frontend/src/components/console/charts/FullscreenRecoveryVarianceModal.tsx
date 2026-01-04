@@ -14,6 +14,8 @@ interface ChartDataPoint {
     cumulativeEscalated: number;
 }
 
+// VarianceDataPoint is currently not used directly but kept for reference
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface VarianceDataPoint {
     name: number;
     time: number;
@@ -814,11 +816,15 @@ const FullscreenRecoveryVarianceModal = ({
                                             return null;
                                         }} />
                                         <Line type="monotone" dataKey="actualVariance" stroke={isStableMode ? '#10b981' : '#f59e0b'} strokeWidth={2}
-                                            dot={({ cx, cy, payload }: { cx: number; cy: number; payload: VarianceDataPoint }) => (
-                                                <circle cx={cx} cy={cy} r={showAnomalies && payload.isAnomaly ? 6 : 3}
-                                                    fill={showAnomalies && payload.isAnomaly ? '#f59e0b' : isStableMode ? '#10b981' : '#f59e0b'}
-                                                    stroke={showAnomalies && payload.isAnomaly ? '#fff' : 'none'} strokeWidth={2} />
-                                            )}
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            dot={(props: any) => {
+                                                const { cx, cy, payload } = props;
+                                                return (
+                                                    <circle cx={cx} cy={cy} r={showAnomalies && payload.isAnomaly ? 6 : 3}
+                                                        fill={showAnomalies && payload.isAnomaly ? '#f59e0b' : isStableMode ? '#10b981' : '#f59e0b'}
+                                                        stroke={showAnomalies && payload.isAnomaly ? '#fff' : 'none'} strokeWidth={2} />
+                                                );
+                                            }}
                                         />
                                         {showTrendProjection && <Line type="monotone" dataKey="trend" stroke="#60a5fa" strokeWidth={2} strokeDasharray="3 3" dot={false} />}
                                         {showGoldenBaseline && <Line type="monotone" dataKey="golden" stroke="#fbbf24" strokeWidth={2} strokeDasharray="4 2" dot={false} />}
