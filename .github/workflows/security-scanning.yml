@@ -75,19 +75,19 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
       - name: Run Checkov
-        uses: bridgecrewio/checkov-action@v12  # Use latest stable
+        uses: bridgecrewio/checkov-action@v12
         with:
           directory: .
           framework: dockerfile,docker_compose,kubernetes,github_actions
-          soft_fail: true  # Don't fail build, report only
-          output_format: sarif
-          output_file_path: checkov-results.sarif
+          soft_fail: true
+          output_format: cli,sarif
+          output_file_path: console,results.sarif
 
       - name: Upload Checkov Results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && hashFiles('results.sarif') != ''
         with:
-          sarif_file: 'checkov-results.sarif'
+          sarif_file: 'results.sarif'
 
   # ---------------------------------------------------------------------------
   # Dependency Vulnerability Scan (npm audit, cargo audit)
