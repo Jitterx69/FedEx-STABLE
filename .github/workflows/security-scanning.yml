@@ -80,6 +80,7 @@ jobs:
           directory: .
           framework: dockerfile,kubernetes,github_actions
           soft_fail: true
+          skip_check: CKV_GHA_7  # Skip "workflow_dispatch inputs MUST be empty" check as DAST requires inputs
           output_format: cli,sarif
           output_file_path: console,results.sarif
 
