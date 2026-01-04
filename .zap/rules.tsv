@@ -1,0 +1,32 @@
+# ZAP Passive Scan Rules Configuration
+# Format: ruleId	action	parameter
+# Actions: IGNORE, WARN, FAIL
+# Reference: https://www.zaproxy.org/docs/docker/baseline-scan/
+
+# Ignore informational alerts
+10015	IGNORE	# Incomplete or No Cache-control and Pragma HTTP Header Set
+10017	IGNORE	# Cross-Domain JavaScript Source File Inclusion
+10020	IGNORE	# X-Frame-Options Header Not Set (handled by CSP)
+10021	IGNORE	# X-Content-Type-Options Header Missing
+10036	IGNORE	# Server Leaks Version Information
+10037	IGNORE	# Server Error Response
+10038	IGNORE	# Content Security Policy Header Not Set (if CSP is set)
+10050	IGNORE	# Retrieved from Cache
+10054	IGNORE	# Cookie Without SameSite Attribute
+10055	IGNORE	# CSP: Wildcard Directive
+
+# Warn on medium severity
+10010	WARN	# Cookie No HttpOnly Flag
+10011	WARN	# Cookie Without Secure Flag
+10035	WARN	# Strict-Transport-Security Header Not Set
+
+# Fail on high/critical severity
+10016	FAIL	# Web Browser XSS Protection Not Enabled
+10019	FAIL	# Content-Type Header Missing
+40012	FAIL	# Cross Site Scripting (Reflected)
+40014	FAIL	# Cross Site Scripting (Persistent)
+40016	FAIL	# Cross Site Scripting (DOM Based)
+40018	FAIL	# SQL Injection
+90017	FAIL	# XSLT Injection
+90019	FAIL	# Server Side Code Injection
+90020	FAIL	# Remote OS Command Injection
