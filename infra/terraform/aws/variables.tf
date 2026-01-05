@@ -28,3 +28,9 @@ variable "db_username" {
   default     = "stable_admin"
   sensitive   = true
 }
+
+variable "db_password" {
+  description = "Database administrator password"
+  type        = string
+  sensitive   = true
+}

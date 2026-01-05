@@ -49,7 +49,13 @@ jobs:
         run: terraform apply -auto-approve
         env:
           TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
-          # Pass other variables as needed if not using defaults
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+
+      - name: Get Terraform Outputs
+        id: tf-outputs
+        working-directory: infra/terraform/aws
+        run: |
+          echo "rds_endpoint=$(terraform output -raw rds_endpoint)" >> $GITHUB_OUTPUT
 
       # -----------------------------------------------------------------------------
       # AWS EKS CONNECTION
@@ -82,8 +88,8 @@ jobs:
       # -----------------------------------------------------------------------------
       - name: Inject Secrets & Deploy
         env:
-          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
-          # Add other secrets here (e.g., REDIS_URL, API_KEYS)
+          # Dynamically construct the connection string
+          POSTGRES_URL: postgres://${{ secrets.DB_USERNAME }}:${{ secrets.DB_PASSWORD }}@${{ steps.tf-outputs.outputs.rds_endpoint }}/stable_core
         run: |
           # Replace placeholders in infrastructure.yaml with env vars
           envsubst < infra/k8s/infrastructure.yaml > infra/k8s/infrastructure_filled.yaml
@@ -91,6 +97,7 @@ jobs:
           # Deploy all resources
           kubectl apply -f infra/k8s/namespace.yaml
           kubectl apply -f infra/k8s/infrastructure_filled.yaml
+
           kubectl apply -f infra/k8s/network-policy.yaml
           kubectl apply -f infra/k8s/backend-deployment.yaml
           kubectl apply -f infra/k8s/frontend-deployment.yaml
