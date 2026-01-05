@@ -66,8 +66,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn simulate_resolution(assignment: &proto::AssignmentCreated, producer: &FutureProducer) {
-    let mut rng = rand::thread_rng();
-    let outcome = rng.gen_range(0.0..1.0);
+    let mut rng = rand::rng();
+    let outcome = rng.random_range(0.0..1.0);
 
     let (payload, event_type) = if outcome < 0.8 {
         // RECOVER
