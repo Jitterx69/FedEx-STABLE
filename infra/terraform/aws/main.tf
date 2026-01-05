@@ -101,6 +101,7 @@ module "db" {
 
   db_name  = "stable_core"
   username = var.db_username
+  password = var.db_password
   port     = 5432
 
   subnet_ids             = module.vpc.database_subnets
