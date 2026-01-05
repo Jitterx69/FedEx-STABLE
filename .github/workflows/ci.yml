@@ -29,7 +29,7 @@ jobs:
       #     fail-on-severity: high
 
       - name: Secret Scanning (TruffleHog)
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@a633174c3b2242aa1b6f8941d2ad6a99e0305964  # main
         continue-on-error: true  # Don't fail on force pushes or when BASE=HEAD
         with:
           path: ./
@@ -85,7 +85,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
 
       - name: Setup Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@f7ccc83f9ed1e5b9c81d8a67d7ad1a747e22a561  # master
         with:
           toolchain: stable
           components: rustfmt, clippy
