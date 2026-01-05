@@ -38,7 +38,7 @@ jobs:
       - name: ZAP Baseline Scan
         if: ${{ github.event.inputs.scan_type == 'baseline' }}
         uses: zaproxy/action-baseline@7cea08522cd386f6c675776d5e4296aecf61f33b  # v0.14.0
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+
 
       - name: ZAP Baseline Scan
         if: ${{ github.event.inputs.scan_type == 'baseline' }}
@@ -74,9 +74,7 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-      - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+
 
       - name: Install Nuclei
         run: |
@@ -92,7 +90,7 @@ jobs:
 
       - name: Upload Nuclei Results
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882  # v4.4.3
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
+
         with:
           name: nuclei-scan-results
           path: nuclei-results.txt
