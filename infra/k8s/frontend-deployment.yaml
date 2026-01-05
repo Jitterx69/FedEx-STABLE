@@ -1,6 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  # checkov:skip=CKV_K8S_43:Image digest not available for placeholder
   name: frontend
   namespace: stable
   labels:
@@ -32,7 +33,6 @@ spec:
           emptyDir: {}
       containers:
         - name: frontend
-          # checkov:skip=CKV_K8S_43:Image digest not available for placeholder
           image: ghcr.io/jitterx69/fedex-stable/frontend:v1.0.0
           imagePullPolicy: Always
           ports:
