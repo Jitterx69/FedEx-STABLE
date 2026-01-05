@@ -110,8 +110,8 @@ async fn process_estimate(
     // CORE LOGIC: INFORMATION REGULATION
     // Formula: Signal = (Raw * Sharpness) + Noise
     // ---------------------------------------------------------
-    let mut rng = rand::thread_rng();
-    let noise: f64 = rng.gen_range(-1.0..1.0) * noise_amp;
+    let mut rng = rand::rng();
+    let noise: f64 = rng.random_range(-1.0..1.0) * noise_amp;
 
     // We dampen the true signal by the sharpness factor
     // If Sharpness = 1.0, we see full raw. If 0.5, we see 50% raw + noise.

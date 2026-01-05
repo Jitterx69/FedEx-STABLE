@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
 
       # - name: Dependency Review
@@ -29,7 +30,7 @@ jobs:
       #     fail-on-severity: high
 
       - name: Secret Scanning (TruffleHog)
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@a633174c3b2242aa1b6f8941d2ad6a99e0305964  # main
         continue-on-error: true  # Don't fail on force pushes or when BASE=HEAD
         with:
           path: ./
@@ -49,6 +50,10 @@ jobs:
         working-directory: ./frontend
     steps:
       - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
 
       - name: Setup Node.js
@@ -79,18 +84,20 @@ jobs:
         working-directory: ./backend/crates
     steps:
       - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
 
       - name: Install Protobuf Compiler
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
 
       - name: Setup Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@f7ccc83f9ed1e5b9c81d8a67d7ad1a747e22a561  # master
         with:
           toolchain: stable
           components: rustfmt, clippy
 
       - name: Cache Cargo Registry
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57  # v4.2.0
         uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb  # v5.0.1
         with:
           path: |
@@ -127,6 +134,10 @@ jobs:
         working-directory: ./backend/python
     steps:
       - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Setup Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
 
       - name: Setup Python
