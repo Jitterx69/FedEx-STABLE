@@ -13,7 +13,7 @@ metadata:
   name: stable-secrets
   namespace: stable
 type: Opaque
-data:
+stringData:
   # Base64 encoded placeholders. In production, use ExternalSecrets or SealedSecrets.
   # "postgres://user:pass@host:5432/db"
-  POSTGRES_URL: cG9zdGdyZXM6Ly9zdGFibGVfdXNlcjpzdGFibGVfcGFzc3dvcmRAcG9zdGdyZXM6NTQzMi9zdGFibGVfY29yZQ== 
+  POSTGRES_URL: $POSTGRES_URL 

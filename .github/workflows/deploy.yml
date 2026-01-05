@@ -1,0 +1,106 @@
+name: Continuous Deployment
+
+on:
+  workflow_run:
+    workflows: ["Main CI Pipeline"]
+    types:
+      - completed
+    branches:
+      - main
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      id-token: write # For AWS OIDC
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------------
+      # AWS AUTHENTICATION
+      # -----------------------------------------------------------------------------
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # -----------------------------------------------------------------------------
+      # TERRAFORM PROVISIONING
+      # -----------------------------------------------------------------------------
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: infra/terraform/aws
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: infra/terraform/aws
+        run: terraform apply -auto-approve
+        env:
+          TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
+          # Pass other variables as needed if not using defaults
+
+      # -----------------------------------------------------------------------------
+      # AWS EKS CONNECTION
+      # -----------------------------------------------------------------------------
+      - name: Update Kubeconfig
+        run: aws eks update-kubeconfig --name fedex-stable-cluster --region us-east-1
+
+      # -----------------------------------------------------------------------------
+      # ADDONS (HELM)
+      # -----------------------------------------------------------------------------
+      - name: Install Ingress Controller
+        run: |
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
+          helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+            --namespace ingress-nginx --create-namespace \
+            --set controller.service.type=LoadBalancer
+
+      - name: Install Cert-Manager
+        run: |
+          helm repo add jetstack https://charts.jetstack.io
+          helm repo update
+          helm upgrade --install cert-manager jetstack/cert-manager \
+            --namespace cert-manager --create-namespace \
+            --version v1.13.3 \
+            --set installCRDs=true
+
+      # -----------------------------------------------------------------------------
+      # SECRET INJECTION & DEPLOYMENT
+      # -----------------------------------------------------------------------------
+      - name: Inject Secrets & Deploy
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          # Add other secrets here (e.g., REDIS_URL, API_KEYS)
+        run: |
+          # Replace placeholders in infrastructure.yaml with env vars
+          envsubst < infra/k8s/infrastructure.yaml > infra/k8s/infrastructure_filled.yaml
+          
+          # Deploy all resources
+          kubectl apply -f infra/k8s/namespace.yaml
+          kubectl apply -f infra/k8s/infrastructure_filled.yaml
+          kubectl apply -f infra/k8s/network-policy.yaml
+          kubectl apply -f infra/k8s/backend-deployment.yaml
+          kubectl apply -f infra/k8s/frontend-deployment.yaml
+          kubectl apply -f infra/k8s/ingress.yaml
+
+      - name: Force Restart Deployments
+        run: |
+          kubectl rollout restart deployment/backend-gateway -n stable
+          kubectl rollout restart deployment/backend-ingress -n stable
+          kubectl rollout restart deployment/backend-admin -n stable
+          kubectl rollout restart deployment/backend-estimation -n stable
+          kubectl rollout restart deployment/backend-assignment -n stable
+          kubectl rollout restart deployment/frontend -n stable
