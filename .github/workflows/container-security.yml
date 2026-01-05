@@ -31,7 +31,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Build Backend Image
         run: |
-          docker build -t fedex-backend:latest -f backend/crates/Dockerfile backend/crates
+          docker build -t fedex-backend:latest -f backend/crates/Dockerfile .
 
       - name: Scan Backend Image (Trivy)
         uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
