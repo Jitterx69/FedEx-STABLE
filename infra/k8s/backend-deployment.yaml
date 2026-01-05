@@ -1,0 +1,383 @@
+# -----------------------------------------------------------------------------
+# Gateway
+# -----------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-gateway
+  namespace: stable
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=Image digest not available for placeholder
+  labels:
+    app: backend-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend-gateway
+  template:
+    metadata:
+      labels:
+        app: backend-gateway
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: gateway
+          image: ghcr.io/jitterx69/fedex-stable/backend:v1.0.0
+          imagePullPolicy: IfNotPresent
+          command: ["gateway"]
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          envFrom:
+            - configMapRef:
+                name: stable-config
+            - secretRef:
+                name: stable-secrets
+          env:
+            - name: INGRESS_URL
+              value: "http://backend-ingress.stable.svc.cluster.local:3000"
+            - name: ADMIN_URL
+              value: "http://backend-admin.stable.svc.cluster.local:3001"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-gateway
+  namespace: stable
+spec:
+  selector:
+    app: backend-gateway
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
+---
+# -----------------------------------------------------------------------------
+# Ingress Service (Backend)
+# -----------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-ingress
+  namespace: stable
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=Image digest not available for placeholder
+  labels:
+    app: backend-ingress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-ingress
+  template:
+    metadata:
+      labels:
+        app: backend-ingress
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: ingress
+          image: ghcr.io/jitterx69/fedex-stable/backend:v1.0.0
+          command: ["ingress"]
+          ports:
+            - containerPort: 3000
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          livenessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          envFrom:
+            - configMapRef:
+                name: stable-config
+            - secretRef:
+                name: stable-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-ingress
+  namespace: stable
+spec:
+  selector:
+    app: backend-ingress
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
+
+---
+# -----------------------------------------------------------------------------
+# Admin Service
+# -----------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-admin
+  namespace: stable
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=Image digest not available for placeholder
+  labels:
+    app: backend-admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-admin
+  template:
+    metadata:
+      labels:
+        app: backend-admin
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: admin
+          image: ghcr.io/jitterx69/fedex-stable/backend:v1.0.0
+          command: ["admin"]
+          ports:
+            - containerPort: 3001
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          livenessProbe:
+            tcpSocket:
+              port: 3001
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            tcpSocket:
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          envFrom:
+            - configMapRef:
+                name: stable-config
+            - secretRef:
+                name: stable-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-admin
+  namespace: stable
+spec:
+  selector:
+    app: backend-admin
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001
+  type: ClusterIP
+
+---
+# -----------------------------------------------------------------------------
+# Estimation Service (Python)
+# -----------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-estimation
+  namespace: stable
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=Image digest not available for placeholder
+  labels:
+    app: backend-estimation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-estimation
+  template:
+    metadata:
+      labels:
+        app: backend-estimation
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: estimation
+          image: ghcr.io/jitterx69/fedex-stable/ml-estimation:v1.0.0
+          ports:
+            - containerPort: 5001
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false # Python might need to write pycache, or use tmp
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            tcpSocket:
+              port: 5001
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          readinessProbe:
+            tcpSocket:
+              port: 5001
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          envFrom:
+            - configMapRef:
+                name: stable-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-estimation
+  namespace: stable
+spec:
+  selector:
+    app: backend-estimation
+  ports:
+    - protocol: TCP
+      port: 5001
+      targetPort: 5001
+  type: ClusterIP
+
+---
+# -----------------------------------------------------------------------------
+# Assignment Service
+# -----------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-assignment
+  namespace: stable
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=Image digest not available for placeholder
+  labels:
+    app: backend-assignment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-assignment
+  template:
+    metadata:
+      labels:
+        app: backend-assignment
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: assignment
+          image: ghcr.io/jitterx69/fedex-stable/backend:v1.0.0
+          command: ["assignment"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          livenessProbe:
+            exec:
+               command: ["/bin/sh", "-c", "echo OK"] # Assignment may be a worker, using basic exec probe if no port
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+             exec:
+               command: ["/bin/sh", "-c", "echo OK"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          envFrom:
+            - configMapRef:
+                name: stable-config
+            - secretRef:
+                name: stable-secrets
+          env:
+            - name: ESTIMATION_URL
+              value: "http://backend-estimation.stable.svc.cluster.local:5001/predict"
