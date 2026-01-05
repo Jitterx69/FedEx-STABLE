@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
+  namespace: stable
   labels:
     app: frontend
 spec:
@@ -14,22 +15,51 @@ spec:
       labels:
         app: frontend
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101 # Nginx user usually
+        fsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: frontend
-          image: ghcr.io/jitterx69/fedex-stable/frontend:latest
-          imagePullPolicy: Always
+          image: ghcr.io/jitterx69/fedex-stable/frontend:v1.0.0
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5176
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false # Nginx might need to write temp files
+            capabilities:
+              drop: ["ALL"]
+              add: ["NET_BIND_SERVICE"] # If listening on < 1024, but we are on 5176 so maybe OK without
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          livenessProbe:
+            tcpSocket:
+              port: 5176
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            tcpSocket:
+              port: 5176
+            initialDelaySeconds: 5
+            periodSeconds: 10
           env:
             - name: VITE_API_TARGET
-              value: "http://backend-gateway:8080" # This only works if using SSR or proxying via Nginx container, for Client-Side rendering, Env Vars must be built-in or Ingress routed.
-              # Assuming the Frontend container (likely Nginx serving static files) is configured to proxy /api requests to this env var, 
-              # OR assuming this variable is used at build time / runtime entrypoint to configure API URL.
+              value: "http://backend-gateway.stable.svc.cluster.local:8080"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: frontend
+  namespace: stable
 spec:
   selector:
     app: frontend
