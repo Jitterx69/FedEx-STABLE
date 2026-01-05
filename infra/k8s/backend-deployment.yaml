@@ -6,6 +6,8 @@ kind: Deployment
 metadata:
   name: backend-gateway
   namespace: stable
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=Image digest not available for placeholder
   labels:
     app: backend-gateway
 spec:
@@ -89,6 +91,8 @@ kind: Deployment
 metadata:
   name: backend-ingress
   namespace: stable
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=Image digest not available for placeholder
   labels:
     app: backend-ingress
 spec:
@@ -166,6 +170,8 @@ kind: Deployment
 metadata:
   name: backend-admin
   namespace: stable
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=Image digest not available for placeholder
   labels:
     app: backend-admin
 spec:
@@ -243,6 +249,8 @@ kind: Deployment
 metadata:
   name: backend-estimation
   namespace: stable
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=Image digest not available for placeholder
   labels:
     app: backend-estimation
 spec:
@@ -317,6 +325,8 @@ kind: Deployment
 metadata:
   name: backend-assignment
   namespace: stable
+  annotations:
+    checkov.io/skip1: CKV_K8S_43=Image digest not available for placeholder
   labels:
     app: backend-assignment
 spec:
