@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: read # Restrict default permissions to read-only
 
 
 jobs:
