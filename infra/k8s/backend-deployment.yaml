@@ -1,0 +1,214 @@
+# -----------------------------------------------------------------------------
+# Gateway
+# -----------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-gateway
+  labels:
+    app: backend-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend-gateway
+  template:
+    metadata:
+      labels:
+        app: backend-gateway
+    spec:
+      containers:
+        - name: gateway
+          image: ghcr.io/jitterx69/fedex-stable/backend:latest # Placeholder image
+          imagePullPolicy: Always
+          command: ["gateway"]
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: stable-config
+            - secretRef:
+                name: stable-secrets
+          env:
+            - name: INGRESS_URL
+              value: "http://backend-ingress:3000"
+            - name: ADMIN_URL
+              value: "http://backend-admin:3001"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-gateway
+spec:
+  selector:
+    app: backend-gateway
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
+---
+# -----------------------------------------------------------------------------
+# Ingress Service (Backend)
+# -----------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-ingress
+  labels:
+    app: backend-ingress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-ingress
+  template:
+    metadata:
+      labels:
+        app: backend-ingress
+    spec:
+      containers:
+        - name: ingress
+          image: ghcr.io/jitterx69/fedex-stable/backend:latest
+          command: ["ingress"]
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: stable-config
+            - secretRef:
+                name: stable-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-ingress
+spec:
+  selector:
+    app: backend-ingress
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
+
+---
+# -----------------------------------------------------------------------------
+# Admin Service
+# -----------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-admin
+  labels:
+    app: backend-admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-admin
+  template:
+    metadata:
+      labels:
+        app: backend-admin
+    spec:
+      containers:
+        - name: admin
+          image: ghcr.io/jitterx69/fedex-stable/backend:latest
+          command: ["admin"]
+          ports:
+            - containerPort: 3001
+          envFrom:
+            - configMapRef:
+                name: stable-config
+            - secretRef:
+                name: stable-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-admin
+spec:
+  selector:
+    app: backend-admin
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001
+  type: ClusterIP
+
+---
+# -----------------------------------------------------------------------------
+# Estimation Service (Python)
+# -----------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-estimation
+  labels:
+    app: backend-estimation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-estimation
+  template:
+    metadata:
+      labels:
+        app: backend-estimation
+    spec:
+      containers:
+        - name: estimation
+          image: ghcr.io/jitterx69/fedex-stable/ml-estimation:latest
+          ports:
+            - containerPort: 5001
+          envFrom:
+            - configMapRef:
+                name: stable-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-estimation
+spec:
+  selector:
+    app: backend-estimation
+  ports:
+    - protocol: TCP
+      port: 5001
+      targetPort: 5001
+  type: ClusterIP
+
+---
+# -----------------------------------------------------------------------------
+# Assignment Service
+# -----------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-assignment
+  labels:
+    app: backend-assignment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-assignment
+  template:
+    metadata:
+      labels:
+        app: backend-assignment
+    spec:
+      containers:
+        - name: assignment
+          image: ghcr.io/jitterx69/fedex-stable/backend:latest
+          command: ["assignment"]
+          envFrom:
+            - configMapRef:
+                name: stable-config
+            - secretRef:
+                name: stable-secrets
+          env:
+            - name: ESTIMATION_URL
+              value: "http://backend-estimation:5001/predict"

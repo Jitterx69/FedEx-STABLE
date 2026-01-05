@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/jitterx69/fedex-stable/frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5176
+          env:
+            - name: VITE_API_TARGET
+              value: "http://backend-gateway:8080" # This only works if using SSR or proxying via Nginx container, for Client-Side rendering, Env Vars must be built-in or Ingress routed.
+              # Assuming the Frontend container (likely Nginx serving static files) is configured to proxy /api requests to this env var, 
+              # OR assuming this variable is used at build time / runtime entrypoint to configure API URL.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5176
+  type: ClusterIP
