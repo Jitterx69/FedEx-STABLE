@@ -3,23 +3,23 @@
 ---
 
 ## Table of Contents
-1. [Project Overview](#project-overview)
-2. [Vision & Breakthroughs](#vision--breakthroughs)
-3. [Core Architecture](#core-architecture)
-4. [Microservice Landscape](#microservice-landscape)
-5. [Data Flow & Event‑Driven Design](#data-flow--event‑driven-design)
-6. [AI‑Powered Predictive Engine](#ai‑powered-predictive-engine)
-7. [Technology Stack](#technology-stack)
-8. [Installation & Development Workflow](#installation--development-workflow)
-9. [Testing Strategy & Quality Gates](#testing-strategy--quality-gates)
-10. [Performance Benchmarks & Scaling](#performance-benchmarks--scaling)
-11. [Security Model & Hardening](#security-model--hardening)
-12. [Observability, Monitoring & Alerting](#observability-monitoring--alerting)
-13. [Continuous Integration & Delivery](#continuous-integration--delivery)
-14. [Project Structure & Code Organization](#project-structure--code-organization)
-15. [Contribution Guidelines](#contribution-guidelines)
-16. [Roadmap & Future Enhancements](#roadmap--future-enhancements)
-18. [Contact & Support](#contact--support)
+6. [Project Demo](#project-demo)
+7. [Vision & Breakthroughs](#vision--breakthroughs)
+8. [Core Architecture](#core-architecture)
+9. [Microservice Landscape](#microservice-landscape)
+10. [Data Flow & Event‑Driven Design](#data-flow--event‑driven-design)
+11. [AI‑Powered Predictive Engine](#ai‑powered-predictive-engine)
+12. [Technology Stack](#technology-stack)
+13. [Installation & Development Workflow](#installation--development-workflow)
+14. [Testing Strategy & Quality Gates](#testing-strategy--quality-gates)
+15. [Performance Benchmarks & Scaling](#performance-benchmarks--scaling)
+16. [Security Model & Hardening](#security-model--hardening)
+17. [Observability, Monitoring & Alerting](#observability-monitoring--alerting)
+18. [Continuous Integration & Delivery](#continuous-integration--delivery)
+19. [Project Structure & Code Organization](#project-structure--code-organization)
+20. [Contribution Guidelines](#contribution-guidelines)
+21. [Roadmap & Future Enhancements](#roadmap--future-enhancements)
+22. [Contact & Support](#contact--support)
 
 ---
 
@@ -32,6 +32,16 @@ Key business outcomes:
 - **Automated decision‑making** powered by machine‑learning models that continuously retrain on live data.
 - **Scalable, fault‑tolerant architecture** that can be deployed on‑premises or in the cloud.
 - **Regulatory compliance** with PCI‑DSS, GDPR, and industry‑specific audit requirements.
+
+- **Regulatory compliance** with PCI‑DSS, GDPR, and industry‑specific audit requirements.
+
+---
+
+## Project Demo
+
+[![Watch the Demo Walkthrough 🔥](https://i9.ytimg.com/vi_webp/ZMl5tTaACG0/mq3.webp?sqp=CNzL78oG-oaymwEmCMACELQB8quKqQMa8AEB-AHSCIAC0AWKAgwIABABGCsgZShWMA8=&rs=AOn4CLAT1l4wb5FWEhiYV6lCVSMXDhjzWw)](https://youtu.be/ZMl5tTaACG0)
+
+> **Note**: Click the image above to watch the full platform walkthrough.
 
 ---
 
