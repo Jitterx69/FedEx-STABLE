@@ -49,8 +49,11 @@ A custom **gradient‑boosted decision tree** model, served via a lightweight **
 ### Breakthrough 4 – Adaptive Load‑Balancing
 The **Projection** service implements a **dynamic sharding algorithm** that automatically re‑balances partitions based on real‑time load metrics, reducing hotspot latency from 1.8 s to **< 200 ms**.
 
-### Breakthrough 5 – Integrated Governance UI
-The frontend, built with **React 18**, **Tailwind CSS**, and **shadcn/ui**, provides a **glass‑morphism**‑styled dashboard with **real‑time charts** (Recharts) and **drag‑and‑drop workflow editors**. The UI supports **dark mode**, **accessibility** (WCAG 2.1 AA), and **multi‑tenant isolation**.
+### Breakthrough 5 – Automated Compliance & Governance
+The **Regulator** service introduces a real‑time compliance gate that audits every transaction against regulatory rule sets (GDPR, PCI-DSS, FDCPA) before processing. This ensures **zero compliance violations** by design, rather than post-hoc remediation.
+
+### Breakthrough 6 – Integrated Governance UI
+The frontend, built with **React 18**, **Tailwind CSS**, and **shadcn/ui**, provides a **glass‑morphism**‑styled dashboard with **real‑time charts** (Recharts) and **drag‑and‑drop workflow editors**. It features a specialized **Time Slice Inspector** for granular temporal analysis and a **Governance Mode** that strictly controls view access for auditors.
 
 ---
 
@@ -84,8 +87,9 @@ The frontend, built with **React 18**, **Tailwind CSS**, and **shadcn/ui**, prov
 ```
 
 - **Ingestion**: Consumes raw transaction streams from external partners via **Kafka** topics, validates schemas (Protobuf), and writes to the event log.
-- **Gateway**: Exposes a **REST/GraphQL** API, performs authentication/authorization (OAuth2 + JWT), and routes requests to downstream services.
+- **Gateway**: Exposes a **REST/GraphQL** API using **Axum**, performs authentication/authorization (OAuth2 + JWT), and routes requests to downstream services.
 - **Assignment**: Implements a **constraint‑solver** that matches accounts to collection agents based on skill, workload, and geographic rules.
+- **Regulator**: Intercepts and validates events against compliance policies.
 - **Projection**: Materializes aggregate views (e.g., portfolio health, recovery variance) into **PostgreSQL** for fast UI queries.
 - **Lifecycle**: Manages state transitions of accounts (e.g., *Open → In‑Process → Settled*), enforces business rules, and triggers notifications.
 - **AI Engine**: Provides scoring endpoints (`/score`) and model‑explainability APIs.
@@ -98,10 +102,12 @@ The frontend, built with **React 18**, **Tailwind CSS**, and **shadcn/ui**, prov
 | Service | Language | Primary Responsibility | Key Libraries |
 |---------|----------|------------------------|----------------|
 | `ingress` | Rust | Kafka consumer, schema validation | `rdkafka`, `prost` |
-| `gateway` | Rust | API gateway, auth, rate‑limiting | `actix‑web`, `jsonwebtoken` |
+| `gateway` | Rust | API gateway, auth, rate‑limiting | `axum`, `jsonwebtoken`, `tower` |
 | `assignment` | Rust | Agent‑account matching algorithm | `petgraph`, `serde` |
 | `projection` | Rust | Materialized view generation | `sqlx`, `tokio` |
 | `lifecycle` | Rust | State machine, event emission | `fsm`, `chrono` |
+| `admin` | Rust | System configuration & management | `clap`, `config` |
+| `regulator`| Rust | Compliance auditing & enforcement | `opa‑wasm`, `tokio` |
 | `ai_engine` | Python | Predictive scoring, model training | `scikit‑learn`, `fastapi`, `uvicorn` |
 | `frontend` | TypeScript/React | UI, data visualisation, client SDK | `react`, `vite`, `tailwindcss`, `recharts` |
 
@@ -136,7 +142,7 @@ The frontend, built with **React 18**, **Tailwind CSS**, and **shadcn/ui**, prov
 - **Axios** – HTTP client with interceptors for JWT handling
 
 ### Backend (Rust)
-- **Actix‑Web** – high‑performance async web framework
+- **Axum** – ergonomic and modular web framework
 - **SQLx** – compile‑time checked PostgreSQL queries
 - **Tokio** – async runtime
 - **rdkafka** – Kafka client bindings
@@ -152,10 +158,14 @@ The frontend, built with **React 18**, **Tailwind CSS**, and **shadcn/ui**, prov
 - **shap** – explainability
 
 ### Infrastructure
+- **Terraform** – Infrastructure as Code (IaC) for AWS
+- **AWS EKS** – Managed Kubernetes Cluster
 - **Docker & Docker‑Compose** – container orchestration for local dev
-- **Kubernetes (optional)** – production deployment
-- **PostgreSQL 15** – relational storage for aggregates
+- **PostgreSQL 16.1** – relational storage for aggregates
+- **Redis 7.1** – caching layer (ElastiCache)
 - **Redpanda (Kafka‑compatible)** – event streaming backbone
+- **Nginx Ingress** – K8s ingress controller
+- **Cert-Manager** – automated TLS management
 - **Prometheus & Grafana** – metrics collection & dashboards
 - **Jaeger** – distributed tracing
 - **OpenTelemetry** – unified telemetry SDKs
@@ -207,6 +217,13 @@ The frontend, built with **React 18**, **Tailwind CSS**, and **shadcn/ui**, prov
 - **Rust**: `cargo watch -x run` automatically rebuilds on source changes.
 - **Frontend**: Vite provides HMR (Hot Module Replacement).
 - **Python**: `uvicorn --reload` restarts on code changes.
+
+### Production Deployment (Automated)
+The project uses a fully automated **CI/CD pipeline** via GitHub Actions:
+1.  **Infrastructure Provisioning**: Terraform applies state to AWS (VPC, EKS, RDS, ElastiCache).
+2.  **Addon Installation**: Helm charts for Nginx Ingress and Cert-Manager are automatically upgraded.
+3.  **Deployment**: Kubernetes manifests are injected with secrets and applied to the EKS cluster.
+All merges to `main` trigger this flow, ensuring the staging environment is always in sync.
 
 ---
 
@@ -274,7 +291,9 @@ FedEx-STABLE/
 │       ├── gateway/            # API gateway, auth, rate limiting
 │       ├── assignment/         # Agent‑account matching engine
 │       ├── projection/         # Materialized view generator
-│       └── lifecycle/          # State machine & event emitter
+│       ├── lifecycle/          # State machine & event emitter
+│       ├── admin/              # System admin & configuration
+│       └── regulator/          # Compliance & regulatory auditing
 ├── frontend/                    # React/Vite UI
 │   ├── src/
 │   │   ├── components/        # UI components (Console, Charts, Controls)
@@ -286,12 +305,17 @@ FedEx-STABLE/
 │   ├── models/                 # Serialized model artifacts
 │   ├── training/               # Spark job scripts
 │   └── main.py                 # FastAPI entry point
+├── infra/                       # Infrastructure as Code
+│   ├── terraform/             # AWS resource provisioning
+│   └── k8s/                   # Kubernetes manifests
 ├── docs/                        # Documentation
 │   ├── SECURITY_CONFIGURATION.md
 │   └── architecture.md
 ├── schemas/                     # Protobuf definitions
 ├── .github/                     # CI workflows
-│   └── workflows/ci.yml
+│   └── workflows/
+│       ├── ci.yml              # Main pipeline
+│       └── deploy.yml          # Production deployment
 ├── docker-compose.yml           # Local dev stack
 ├── README.md                    # THIS FILE
 └── LICENSE
@@ -326,6 +350,6 @@ FedEx-STABLE/
 ## Contact & Support
 - **Maintainer**: Jitterx ([@jitterx69](https://github.com/Jitterx69))
 - **Issues**: Open a GitHub issue for bugs, feature requests, or security disclosures.
-- **Email**: support@stable‑engine.com
+- **Email**: jitterx69@gmail.com
 
 ---
