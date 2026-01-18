@@ -12,7 +12,7 @@ uuid = { version = "1.6", features = ["v4", "fast-rng"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 rand = "0.9"
-thiserror = "1.0"
+thiserror = "2.0"
 serde = "1.0"
 
 [build-dependencies]
